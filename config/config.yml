@@ -1,0 +1,22 @@
+doctrine:
+  dbparams:
+    driver: "pdo_mysql"
+    user: "toggl_01"
+    password: "6:I&4LdF"
+    dbname: "toggl_01"
+    host: "localhost"
+user:
+  alias:
+    isabel: [isi]
+toggl:
+  apiKey: "e1d49a86954369425dd936a4b39aac87"
+  workspaces: [986852]
+calendar:
+  personal-holidays:
+    url: https://calendar.google.com/calendar/ical/rsvo3pko3vd0g9ta29jkr8q9is%40group.calendar.google.com/private-7e2614ba26b46d0e67c8fd49c346ca6d/basic.ics
+    refresh: 86400
+    type: 0
+  business-holidays:
+    url: http://www.ifeiertage.de/by-.ics
+    refresh: 7776000
+    type: 1

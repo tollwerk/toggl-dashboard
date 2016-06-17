@@ -1,0 +1,32 @@
+{
+  "name": "tollwerk/toggl-dashboard",
+  "description": "Dashboard for monitoring Toggle time entries",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Joschi Kuphal",
+      "email": "joschi@kuphal.net"
+    }
+  ],
+  "minimum-stability": "RC",
+  "require": {
+    "php": ">=5.6.0",
+    "symfony/yaml": "^3.1.0",
+    "ajt/guzzle-toggl": "^0.10",
+    "doctrine/orm": "*",
+    "sabre/vobject": "^4.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5.3",
+    "satooshi/php-coveralls": "^1.0",
+    "codeclimate/php-test-reporter": "dev-master"
+  },
+  "repositories": [
+
+  ],
+  "autoload": {
+    "psr-4": {
+      "Tollwerk\\": "src/"
+    }
+  }
+}
