@@ -36,6 +36,10 @@
 
 namespace Tollwerk\Toggl\Domain\Model;
 
+use Tollwerk\Toggl\Domain\Repository\DayRepository;
+use Tollwerk\Toggl\Domain\Repository\StatsRepository;
+use Tollwerk\Toggl\Ports\App;
+
 /**
  * User
  *
@@ -181,20 +185,34 @@ class User
     /**
      * Return the list of associated days
      *
+     * @param int|null $year Optional: year
      * @return Day[] Days
      */
-    public function getDays()
+    public function getDays($year = null)
     {
-        return $this->days;
+        if ($year === null) {
+            return $this->days;
+        }
+
+        $entityManager = App::getEntityManager();
+        /** @var DayRepository $dayRepository */
+        $dayRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Day');
+        return $dayRepository->getPersonalHolidays($this, $year);
     }
 
     /**
      * Return the list of associated statistics
      *
+     * @param int|null $year Optional: year
      * @return Stats[] Statistics
      */
-    public function getStats()
+    public function getStats($year = null)
     {
         return $this->stats;
+
+        $entityManager = App::getEntityManager();
+        /** @var StatsRepository $statsRepository */
+        $statsRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Stats');
+        return $statsRepository->getUserStats($this, $year);
     }
 }

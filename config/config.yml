@@ -7,20 +7,31 @@ doctrine:
     host: "localhost"
 user:
   joschi:
-    working-hours-per-week: 40
-    holidays-per-year: 28
-    personnel-costs: 2500
+    holidays_per_year: 28
+    personnel_costs: 2500
   isabel:
     aliases: [isi]
-    working-hours-per-week: 40
-    holidays-per-year: 25
-    personnel-costs: 1000
+    working_days: [2, 3, 4, 5]
+    holidays_per_year: 25
+    personnel_costs: 1000
   nina:
-    working-hours-per-week: 32.5
-    holidays-per-year: 21
-    personnel-costs: 1000
+    working_hours_per_day: 6.5
+    holidays_per_year: 21
+    personnel_costs: 1000
+  klaus:
+    holidays_per_year: 26
+    personnel_costs: 2500
+  bertram:
+    working_days: [1, 2, 3]
+    holidays_per_year: 16
+    personnel_costs: 1000
+  jule:
+    holidays_per_year: 25
+    personnel_costs: 1000
 general:
   timezone: "Europe/Berlin"
+  working_days: [1, 2, 3, 4, 5]
+  working_hours_per_day: 8
 toggl:
   apiKey: "e1d49a86954369425dd936a4b39aac87"
   workspaces: [986852]
@@ -30,6 +41,6 @@ calendar:
     refresh: 86400
     type: 0
   business-holidays:
-    url: http://www.ifeiertage.de/by-.ics
+    url: http://i.cal.to/ical/65/bayern/feiertage/e15a0975.8ed5c461-47fa1761.ics
     refresh: 7776000
     type: 1

@@ -7,25 +7,27 @@ doctrine:
     host: "localhost"
 user:
   john:
-    working-hours-per-week: 40
-    holidays-per-year: 28
-    personnel-costs: 2500
+    holidays_per_year: 28
+    personnel_costs: 2500
   jane:
     aliases: [nick]
-    working-hours-per-week: 26
-    holidays-per-year: 25
-    personnel-costs: 2400
+    working_days: [1, 2, 3, 4]
+    working_hours_per_day: 6
+    holidays_per_year: 24
+    personnel_costs: 2400
 general:
   timezone: "Europe/Berlin"
+  working_days: [1, 2, 3, 4, 5]
+  working_hours_per_day: 8
 toggl:
   apiKey: "8ebaedbfb2b5724cb537fdb5118c449e"
   workspaces: [926872]
 calendar:
-  personal-holidays:
+  personal_holidays:
     url: https://calendar.google.com/calendar/ical/path-to-privat-ical/basic.ics
     refresh: 86400
     type: 0
-  business-holidays:
+  business_holidays:
     url: http://www.ifeiertage.de/by-.ics
     refresh: 7776000
     type: 1

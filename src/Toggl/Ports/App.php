@@ -41,6 +41,8 @@ use AJT\Toggl\TogglClient;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\Setup;
 use Symfony\Component\Yaml\Yaml;
+use Tollwerk\Toggl\Infrastructure\Dql\DayOfYear;
+use Tollwerk\Toggl\Infrastructure\Dql\Year;
 
 /**
  * App
@@ -126,6 +128,11 @@ class App
         ];
         $dbParams = self::$config['doctrine']['dbparams'];
         $config = Setup::createAnnotationMetadataConfiguration($modelPaths, self::$devMode);
+
+        // Register custom functions
+        $config->addCustomNumericFunction('YEAR', Year::class);
+        $config->addCustomNumericFunction('DAYOFYEAR', DayOfYear::class);
+
         self::$entityManager = EntityManager::create($dbParams, $config);
     }
 

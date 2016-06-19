@@ -41,7 +41,7 @@ namespace Tollwerk\Toggl\Domain\Model;
  *
  * @package Apparat\Server
  * @subpackage Tollwerk\Toggl\Domain\Model
- * @Entity
+ * @Entity(repositoryClass="Tollwerk\Toggl\Domain\Repository\DayRepository")
  * @Table(name="day",uniqueConstraints={@UniqueConstraint(name="userdate", columns={"user_id", "date", "uuid"})})
  */
 class Day
@@ -232,5 +232,32 @@ class Day
     {
         $this->name = $name;
         return $this;
+    }
+
+    /**
+     * Return the day of the year
+     *
+     * @return int Day of the year
+     */
+    public function getDayOfYear() {
+        return $this->date->format('z');
+    }
+
+    /**
+     * Return the month
+     *
+     * @return int Month
+     */
+    public function getMonth() {
+        return $this->date->format('n');
+    }
+
+    /**
+     * Return the day
+     *
+     * @return int Day
+     */
+    public function getDay() {
+        return $this->date->format('j');
     }
 }

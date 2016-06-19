@@ -3,8 +3,9 @@
 /**
  * Toggl Dashboard
  *
- * @category    Tollwerk
- * @package     Tollwerk\Toggl
+ * @category    Apparat
+ * @package     Apparat\Server
+ * @subpackage  Tollwerk\Toggl\Infrastructure\Dql
  * @author      Joschi Kuphal <joschi@tollwerk.de> / @jkphl
  * @copyright   Copyright © 2016 Joschi Kuphal <joschi@tollwerk.de> / @jkphl
  * @license     http://opensource.org/licenses/MIT The MIT License (MIT)
@@ -33,31 +34,48 @@
  *  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ***********************************************************************************/
 
-//header('Content-Type: text/plain');
-header('Content-Type: application/json');
-require_once dirname(__DIR__).DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR.'bootstrap.php';
+namespace Tollwerk\Toggl\Infrastructure\Dql;
 
+use Doctrine\ORM\Query\AST\Functions\FunctionNode;
+use Doctrine\ORM\Query\Lexer;
 
-//use AJT\Toggl\ReportsClient;
-use AJT\Toggl\TogglClient;
-//use Symfony\Component\Yaml\Yaml;
-//
-//$yamlConfigStr = file_get_contents(dirname(__DIR__).DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'config.yml');
-//$yamlConfig = Yaml::parse($yamlConfigStr);
+/**
+ * DayOfYearFunction ::= "DAYOFYEAR" "(" ArithmeticPrimary ")"
+ *
+ * @package Apparat\Server
+ * @subpackage Tollwerk\Toggl\Infrastructure\Dql
+ */
+class DayOfYear extends FunctionNode
+{
+    /**
+     * Date expression
+     *
+     * @var null
+     */
+    protected $dateExpression = null;
 
-/** @var TogglClient $togglClient */
-//$reportsClient = ReportsClient::factory(array('api_key' => 'e1d49a86954369425dd936a4b39aac87', 'debug' => false));
-//
-//print_r($reportsClient->summary([
-//    'user_agent' => 'Tollwerk Toggl Dashboard',
-//    'workspace_id' => $yamlConfig['workspaces'][0]
-//]));
+    /**
+     * Return the SQL for YEAR()
+     *
+     * @param \Doctrine\ORM\Query\SqlWalker $sqlWalker
+     * @return string
+     */
+    public function getSql(\Doctrine\ORM\Query\SqlWalker $sqlWalker)
+    {
+        return 'DAYOFYEAR('.$this->dateExpression->dispatch($sqlWalker).')';
+    }
 
-//$togglClient = TogglClient::factory(array('api_key' => 'e1d49a86954369425dd936a4b39aac87', 'debug' => false));
-//print_r($togglClient->getWorkspaceUsers(array('id' => 986852)));
-
-$entityManager = \Tollwerk\Toggl\Ports\App::getEntityManager();
-$userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
-$user = $userRepository->find(5);
-//print_r(\Tollwerk\Toggl\Application\Service\StatisticsService::getUserStatistics($user));
-echo json_encode(\Tollwerk\Toggl\Application\Service\StatisticsService::getUserStatistics($user));
+    /**
+     * Parse the YEAR() function
+     *
+     * @param \Doctrine\ORM\Query\Parser $parser
+     * @return void
+     */
+    public function parse(\Doctrine\ORM\Query\Parser $parser)
+    {
+        $parser->match(Lexer::T_IDENTIFIER); // (2)
+        $parser->match(Lexer::T_OPEN_PARENTHESIS); // (3)
+        $this->dateExpression = $parser->ArithmeticPrimary(); // (4)
+        $parser->match(Lexer::T_CLOSE_PARENTHESIS); // (3)
+    }
+}

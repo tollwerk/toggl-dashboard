@@ -41,7 +41,7 @@ namespace Tollwerk\Toggl\Domain\Model;
  *
  * @package Apparat\Server
  * @subpackage Tollwerk\Toggl\Domain\Model
- * @Entity
+ * @Entity(repositoryClass="Tollwerk\Toggl\Domain\Repository\StatsRepository")
  * @Table(name="stats",uniqueConstraints={@UniqueConstraint(name="userdate", columns={"user_id", "date"})})
  */
 class Stats

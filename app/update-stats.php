@@ -51,8 +51,8 @@ $todayStart = new \DateTimeImmutable('today', $timezone);
 $todayEnd = (new \DateTimeImmutable('tomorrow', $timezone))->modify('-1 second');
 $userIds = [];
 
-//$todayStart = $todayStart->modify('-1 days');
-//$todayEnd = $todayEnd->modify('-1 days');
+//$todayStart = $todayStart->modify('-7 days');
+//$todayEnd = $todayEnd->modify('-7 days');
 
 // Collect the user IDs to query
 /** @var User $user */
@@ -87,8 +87,8 @@ foreach ($workspaces as $workspace) {
 
         // Run through all time entries
         foreach ($userEntry['items'] as $userItem) {
-            $total += $userItem['time'];
-            $billable += $userItem['sum'] ? $userItem['time'] : 0;
+            $total += intval($userItem['time'] / 1000);
+            $billable += $userItem['sum'] ? intval($userItem['time'] / 1000) : 0;
             $billableSum += $userItem['sum'];
         }
 

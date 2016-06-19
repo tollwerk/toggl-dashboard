@@ -46,22 +46,20 @@ require_once __DIR__.DIRECTORY_SEPARATOR.'bootstrap.php';
  * Normalize a date to 00:00:00
  *
  * @param DateTimeInterface $date Date
- * @param DateTimeZone $timeZone Timezone
  * @return DateTimeImmutable Normalized date
  */
-function normalizeDate(\DateTimeInterface $date, \DateTimeZone $timeZone)
+function normalizeDate(\DateTimeInterface $date)
 {
-    return new \DateTimeImmutable(
-        '@'.mktime(0, 0, 0, $date->format('n'), $date->format('j'), $date->format('Y')),
-        $timeZone
-    );
+    $normalized = clone $date;
+    return $normalized->setTime(0, 0, 0);
 }
 
 $entityManager = App::getEntityManager();
 $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
 $dayRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Day');
-$today = new \DateTimeImmutable('today');
 $timezone = new \DateTimeZone(App::getConfig('general.timezone'));
+$today = new \DateTimeImmutable('today', $timezone);
+$today = new \DateTimeImmutable('2016-01-01');
 
 // Collect all users
 $users = [];
@@ -106,17 +104,15 @@ foreach ($calendars as $calendar) {
 
             // Skip if the event has past
             /** @var \DateTimeImmutable $startDate */
-            $startDate = normalizeDate(
-                $event->DTSTART->getDateTime()->setTimezone($timezone),
-                $timezone
-            );
-            $endDate = normalizeDate(
-                $event->DTEND->getDateTime()->setTimezone($timezone)->modify('-1 second'),
-                $timezone
-            );
+            $startDate = normalizeDate($event->DTSTART->getDateTime());
+            $endDate = normalizeDate($event->DTEND->getDateTime()->modify('-1 second'));
             if ($endDate < $today) {
                 continue;
             }
+
+//            echo PHP_EOL.PHP_EOL.$event->DTSTART->serialize();
+//            print_r($event->DTSTART->getDateTime());
+//            print_r($startDate);
 
             // Validate and prepare the holiday data
             $user = null;

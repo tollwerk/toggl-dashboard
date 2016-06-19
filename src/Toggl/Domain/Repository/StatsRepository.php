@@ -3,8 +3,9 @@
 /**
  * Toggl Dashboard
  *
- * @category    Tollwerk
- * @package     Tollwerk\Toggl
+ * @category    Apparat
+ * @package     Apparat\Server
+ * @subpackage  Tollwerk\Toggl\Domain\Repository
  * @author      Joschi Kuphal <joschi@tollwerk.de> / @jkphl
  * @copyright   Copyright © 2016 Joschi Kuphal <joschi@tollwerk.de> / @jkphl
  * @license     http://opensource.org/licenses/MIT The MIT License (MIT)
@@ -33,31 +34,43 @@
  *  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ***********************************************************************************/
 
-//header('Content-Type: text/plain');
-header('Content-Type: application/json');
-require_once dirname(__DIR__).DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR.'bootstrap.php';
+namespace Tollwerk\Toggl\Domain\Repository;
 
 
-//use AJT\Toggl\ReportsClient;
-use AJT\Toggl\TogglClient;
-//use Symfony\Component\Yaml\Yaml;
-//
-//$yamlConfigStr = file_get_contents(dirname(__DIR__).DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'config.yml');
-//$yamlConfig = Yaml::parse($yamlConfigStr);
+use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query\QueryException;
+use Tollwerk\Toggl\Domain\Model\Day;
+use Tollwerk\Toggl\Domain\Model\User;
+use Tollwerk\Toggl\Ports\App;
 
-/** @var TogglClient $togglClient */
-//$reportsClient = ReportsClient::factory(array('api_key' => 'e1d49a86954369425dd936a4b39aac87', 'debug' => false));
-//
-//print_r($reportsClient->summary([
-//    'user_agent' => 'Tollwerk Toggl Dashboard',
-//    'workspace_id' => $yamlConfig['workspaces'][0]
-//]));
-
-//$togglClient = TogglClient::factory(array('api_key' => 'e1d49a86954369425dd936a4b39aac87', 'debug' => false));
-//print_r($togglClient->getWorkspaceUsers(array('id' => 986852)));
-
-$entityManager = \Tollwerk\Toggl\Ports\App::getEntityManager();
-$userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
-$user = $userRepository->find(5);
-//print_r(\Tollwerk\Toggl\Application\Service\StatisticsService::getUserStatistics($user));
-echo json_encode(\Tollwerk\Toggl\Application\Service\StatisticsService::getUserStatistics($user));
+/**
+ * Stats repository
+ *
+ * @package Apparat\Server
+ * @subpackage Tollwerk\Toggl\Domain\Repository
+ */
+class StatsRepository extends EntityRepository
+{
+    /**
+     * Return all stats of a particular user in a particular year
+     *
+     * @param User $user User
+     * @param int $year Year
+     * @return array User stats
+     */
+    public function getUserStats(User $user, $year)
+    {
+        try {
+            $qb = App::getEntityManager()->createQueryBuilder();
+            $qb->select('s')
+                ->from('Tollwerk\Toggl\Domain\Model\Stats', 's')
+                ->where('s.user = :user')
+                ->andWhere('YEAR(s.date) = '.intval($year))
+                ->setParameter('user', $user);
+//            echo $qb->getQuery()->getSQL();
+            return $qb->getQuery()->execute();
+        } catch (QueryException $e) {
+            echo $e->getMessage();
+        }
+    }
+}
