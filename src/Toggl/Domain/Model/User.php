@@ -62,7 +62,7 @@ class User
      * Toggl ID
      *
      * @var integer
-     * @Column(type="integer")
+     * @Column(type="integer", nullable=true)
      */
     protected $togglId;
     /**

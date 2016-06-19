@@ -42,6 +42,15 @@ require_once __DIR__.DIRECTORY_SEPARATOR.'bootstrap.php';
 $entityManager = App::getEntityManager();
 $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
 
+// Add a system user (if not yet present)
+$systemUser = $userRepository->findOneBy(['token' => 'system']);
+if (!($systemUser instanceof User)) {
+    $systemUser = new User();
+    $systemUser->setName(App::getConfig('system.name'));
+    $systemUser->setToken(App::getConfig('system.token'));
+    $entityManager->persist($systemUser);
+}
+
 $togglClient = App::getTogglClient();
 $workspaces = App::getConfig('toggl.workspaces');
 

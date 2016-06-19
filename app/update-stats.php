@@ -55,9 +55,17 @@ $userIds = [];
 //$todayEnd = $todayEnd->modify('-7 days');
 
 // Collect the user IDs to query
-/** @var User $user */
-foreach ($userRepository->findAll() as $user) {
-    $userIds[] = $user->getTogglId();
+try {
+    $qb = $userRepository->createQueryBuilder('u');
+    $qb->where($qb->expr()->isNotNull('u.togglId'));
+
+    /** @var User $user */
+    foreach ($qb->getQuery()->getResult() as $user) {
+        $userIds[] = $user->getTogglId();
+    }
+} catch (\Doctrine\ORM\Query\QueryException $e) {
+    echo $e->getMessage();
+    exit;
 }
 
 // Run through all workspaces

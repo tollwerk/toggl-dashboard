@@ -58,6 +58,6 @@ use AJT\Toggl\TogglClient;
 
 $entityManager = \Tollwerk\Toggl\Ports\App::getEntityManager();
 $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
-$user = $userRepository->find(5);
+$user = $userRepository->find(8);
 //print_r(\Tollwerk\Toggl\Application\Service\StatisticsService::getUserStatistics($user));
 echo json_encode(\Tollwerk\Toggl\Application\Service\StatisticsService::getUserStatistics($user));

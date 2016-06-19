@@ -14,11 +14,16 @@ user:
     working_days: [1, 2, 3, 4]
     working_hours_per_day: 6
     holidays_per_year: 24
-    personnel_costs: 2400
+    costs: 2400
+  system:
+    costs: 5000
 general:
   timezone: "Europe/Berlin"
   working_days: [1, 2, 3, 4, 5]
   working_hours_per_day: 8
+system:
+  token: system
+  name: Allgemein
 toggl:
   apiKey: "8ebaedbfb2b5724cb537fdb5118c449e"
   workspaces: [926872]

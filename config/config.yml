@@ -8,30 +8,35 @@ doctrine:
 user:
   joschi:
     holidays_per_year: 28
-    personnel_costs: 2500
+    costs: 2500
   isabel:
     aliases: [isi]
     working_days: [2, 3, 4, 5]
     holidays_per_year: 25
-    personnel_costs: 1000
+    costs: 1000
   nina:
     working_hours_per_day: 6.5
     holidays_per_year: 21
-    personnel_costs: 1000
+    costs: 1000
   klaus:
     holidays_per_year: 26
-    personnel_costs: 2500
+    costs: 2500
   bertram:
     working_days: [1, 2, 3]
     holidays_per_year: 16
-    personnel_costs: 1000
+    costs: 1000
   jule:
     holidays_per_year: 25
-    personnel_costs: 1000
+    costs: 1000
+  system:
+    costs: 5000
 general:
   timezone: "Europe/Berlin"
   working_days: [1, 2, 3, 4, 5]
   working_hours_per_day: 8
+system:
+  token: system
+  name: Allgemein
 toggl:
   apiKey: "e1d49a86954369425dd936a4b39aac87"
   workspaces: [986852]

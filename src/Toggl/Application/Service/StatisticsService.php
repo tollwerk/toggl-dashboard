@@ -155,9 +155,10 @@ class StatisticsService
         }
 
         // Calculate costs per day
-        $userCostsPerMonth = floatval(App::getConfig('user.'.$user->getToken().'.personnel_costs'));
+        $userCostsPerMonth = floatval(App::getConfig('user.'.$user->getToken().'.costs'));
         $stats['by_year']['costs_total'] = $userCostsPerMonth * 12;
-        $stats['by_month']['costs_total'] = array_fill_keys($stats['workdays_by_month'], $userCostsPerMonth);
+        $stats['by_month']['costs_total'] = array_fill_keys(array_keys($stats['workdays_by_month']),
+            $userCostsPerMonth);
 
         // Clone the remaining working day structure for time entries
         foreach ($stats['workdays_by_month'] as $month => $workdays) {
@@ -179,7 +180,8 @@ class StatisticsService
                 $stats['by_week']['time_status'][$week] =
                 $stats['by_week']['billable'][$week] =
                 $stats['by_week']['billable_sum'][$week] =
-                $stats['by_week']['costs_status'][$week] = 0;
+                $stats['by_week']['costs_status'][$week] =
+                $stats['by_week']['costs_total'][$week] = 0;
             }
             foreach ($workdays as $week) {
                 $stats['by_week']['time_total'][$week] += $stats['working_hours_per_day'] * 3600;
@@ -189,7 +191,7 @@ class StatisticsService
             $stats['by_day']['time'][$month] =
             $stats['by_day']['time_status'][$month] =
             $stats['by_day']['billable'][$month] =
-            $stats['by_day']['billable_sum'][$month]=
+            $stats['by_day']['billable_sum'][$month] =
             $stats['by_day']['costs_status'][$month] = array_fill_keys(array_keys($workdays), 0);
             $stats['by_day']['time_total'][$month] = array_fill_keys(array_keys($workdays),
                 $stats['working_hours_per_day'] * 3600);
