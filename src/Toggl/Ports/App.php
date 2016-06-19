@@ -36,6 +36,7 @@
 
 namespace Tollwerk\Toggl\Ports;
 
+use AJT\Toggl\ReportsClient;
 use AJT\Toggl\TogglClient;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\Setup;
@@ -79,6 +80,12 @@ class App
      * @var TogglClient
      */
     protected static $togglClient;
+    /**
+     * Toggl reports client
+     *
+     * @var ReportsClient
+     */
+    protected static $togglReportsClient;
 
     /**
      * Bootstrap
@@ -149,6 +156,22 @@ class App
     }
 
     /**
+     * Return a Toggl reports client
+     *
+     * @return ReportsClient Toggl reports client
+     */
+    public static function getTogglReportsClient()
+    {
+        if (self::$togglReportsClient === null) {
+            self::$togglReportsClient = ReportsClient::factory([
+                'api_key' => self::$config['toggl']['apiKey'],
+                'debug' => false
+            ]);
+        }
+        return self::$togglReportsClient;
+    }
+
+    /**
      * Get a configuration value
      *
      * @param null $key Optional: config value key
@@ -168,5 +191,19 @@ class App
             $config =& $config[$keyPart];
         }
         return $config;
+    }
+
+    /**
+     * Build a map of registered users and their aliases
+     *
+     * @return array User alias map
+     */
+    public static function getUserAliasMap()
+    {
+        $userAliases = [];
+        foreach (self::$config['user'] as $userToken => $userConfig) {
+            $userAliases[$userToken] = empty($userConfig['aliases']) ? [] : (array)$userConfig['aliases'];
+        }
+        return $userAliases;
     }
 }

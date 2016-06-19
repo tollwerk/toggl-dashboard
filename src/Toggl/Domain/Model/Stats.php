@@ -37,17 +37,17 @@
 namespace Tollwerk\Toggl\Domain\Model;
 
 /**
- * User
+ * Day
  *
  * @package Apparat\Server
  * @subpackage Tollwerk\Toggl\Domain\Model
  * @Entity
- * @Table(name="user")
+ * @Table(name="stats",uniqueConstraints={@UniqueConstraint(name="userdate", columns={"user_id", "date"})})
  */
-class User
+class Stats
 {
     /**
-     * User ID
+     * Stats ID
      *
      * @var integer
      * @Id @Column(type="integer")
@@ -55,45 +55,45 @@ class User
      */
     protected $id;
     /**
-     * Toggl ID
+     * Date
+     *
+     * @var \DateTime
+     * @Column(type="date")
+     */
+    protected $date;
+    /**
+     * Associated user
+     *
+     * @var User
+     * @ManyToOne(targetEntity="Tollwerk\Toggl\Domain\Model\User", inversedBy="stats")
+     */
+    protected $user;
+    /**
+     * Total time
      *
      * @var integer
      * @Column(type="integer")
      */
-    protected $togglId;
+    protected $total;
     /**
-     * User name
+     * Billable time
      *
-     * @var string
-     * @Column(length=64)
+     * @var integer
+     * @Column(type="integer")
      */
-    protected $name;
+    protected $billable;
     /**
-     * User token
+     * Billable sum
      *
-     * @var string
-     * @Column(length=64)
+     * @var float
+     * @Column(type="float")
      */
-    protected $token;
-    /**
-     * List of all associated days
-     *
-     * @var Day[]
-     * @OneToMany(targetEntity="Tollwerk\Toggl\Domain\Model\Day", mappedBy="user")
-     */
-    protected $days;
-    /**
-     * List of all associated stats
-     *
-     * @var Stats[]
-     * @OneToMany(targetEntity="Tollwerk\Toggl\Domain\Model\Stats", mappedBy="user")
-     */
-    protected $stats;
+    protected $billableSum;
 
     /**
-     * Return the user ID
+     * Return the day ID
      *
-     * @return int User ID
+     * @return int Day ID
      */
     public function getId()
     {
@@ -101,10 +101,10 @@ class User
     }
 
     /**
-     * Set the user ID
+     * Set the day ID
      *
-     * @param int $id User ID
-     * @return User
+     * @param int $id Day ID
+     * @return Day
      */
     public function setId($id)
     {
@@ -113,88 +113,112 @@ class User
     }
 
     /**
-     * Return the Toggl ID
+     * Return the date
      *
-     * @return int Toggl ID
+     * @return \DateTime Date
      */
-    public function getTogglId()
+    public function getDate()
     {
-        return $this->togglId;
+        return $this->date;
     }
 
     /**
-     * Set the Toggl ID
+     * Set the date
      *
-     * @param int $togglId Toggl ID
-     * @return User
+     * @param \DateTime $date Date
+     * @return Day
      */
-    public function setTogglId($togglId)
+    public function setDate(\DateTimeInterface $date)
     {
-        $this->togglId = $togglId;
+        $this->date = $date;
         return $this;
     }
 
     /**
-     * Return the user name
+     * Return the user
      *
-     * @return string User name
+     * @return User User
      */
-    public function getName()
+    public function getUser()
     {
-        return $this->name;
+        return $this->user;
     }
 
     /**
-     * Set the user name
+     * Set the user
      *
-     * @param string $name User name
-     * @return User
+     * @param User $user User
+     * @return Day
      */
-    public function setName($name)
+    public function setUser(User $user = null)
     {
-        $this->name = $name;
+        $this->user = $user;
         return $this;
     }
 
     /**
-     * Return the user token
+     * Return the total time in seconds
      *
-     * @return string User token
+     * @return int Total time in seconds
      */
-    public function getToken()
+    public function getTotal()
     {
-        return $this->token;
+        return $this->total;
     }
 
     /**
-     * Set the user token
+     * Return the billable time in seconds
      *
-     * @param string $token User token
-     * @return User
+     * @return int Billable time in seconds
      */
-    public function setToken($token)
+    public function getBillable()
     {
-        $this->token = $token;
+        return $this->billable;
+    }
+
+    /**
+     * Return the billable time in currency
+     *
+     * @return float Billable time in currency
+     */
+    public function getBillableSum()
+    {
+        return $this->billableSum;
+    }
+
+    /**
+     * Set the total time in seconds
+     *
+     * @param int $total Total time in seconds
+     * @return Stats Self reference
+     */
+    public function setTotal($total)
+    {
+        $this->total = $total;
         return $this;
     }
 
     /**
-     * Return the list of associated days
+     * Set the billable time in seconds
      *
-     * @return Day[] Days
+     * @param int $billable Billable time in seconds
+     * @return Stats Self reference
      */
-    public function getDays()
+    public function setBillable($billable)
     {
-        return $this->days;
+        $this->billable = $billable;
+        return $this;
     }
 
     /**
-     * Return the list of associated statistics
+     * Set the billable time in currency
      *
-     * @return Stats[] Statistics
+     * @param float $billableSum Billable time in currency
+     * @return Stats Self reference
      */
-    public function getStats()
+    public function setBillableSum($billableSum)
     {
-        return $this->stats;
+        $this->billableSum = $billableSum;
+        return $this;
     }
 }

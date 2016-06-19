@@ -6,8 +6,21 @@ doctrine:
     dbname: "toggl_01"
     host: "localhost"
 user:
-  alias:
-    isabel: [isi]
+  joschi:
+    working-hours-per-week: 40
+    holidays-per-year: 28
+    personnel-costs: 2500
+  isabel:
+    aliases: [isi]
+    working-hours-per-week: 40
+    holidays-per-year: 25
+    personnel-costs: 1000
+  nina:
+    working-hours-per-week: 32.5
+    holidays-per-year: 21
+    personnel-costs: 1000
+general:
+  timezone: "Europe/Berlin"
 toggl:
   apiKey: "e1d49a86954369425dd936a4b39aac87"
   workspaces: [986852]

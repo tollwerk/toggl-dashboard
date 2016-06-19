@@ -42,7 +42,7 @@ namespace Tollwerk\Toggl\Domain\Model;
  * @package Apparat\Server
  * @subpackage Tollwerk\Toggl\Domain\Model
  * @Entity
- * @Table(name="day")
+ * @Table(name="day",uniqueConstraints={@UniqueConstraint(name="userdate", columns={"user_id", "date", "uuid"})})
  */
 class Day
 {
@@ -58,7 +58,7 @@ class Day
      * Day UUID
      *
      * @var string
-     * @Column(type="string", unique=true, length=64)
+     * @Column(type="string", length=64)
      */
     protected $uuid;
     /**

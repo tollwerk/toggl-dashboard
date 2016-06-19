@@ -34,18 +34,34 @@
  *  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ***********************************************************************************/
 
-use \Tollwerk\Toggl\Ports\App;
 use Sabre\VObject\Component\VEvent;
 use Sabre\VObject\Reader;
 use Tollwerk\Toggl\Domain\Model\Day;
 use Tollwerk\Toggl\Domain\Model\User;
+use Tollwerk\Toggl\Ports\App;
 
 require_once __DIR__.DIRECTORY_SEPARATOR.'bootstrap.php';
+
+/**
+ * Normalize a date to 00:00:00
+ *
+ * @param DateTimeInterface $date Date
+ * @param DateTimeZone $timeZone Timezone
+ * @return DateTimeImmutable Normalized date
+ */
+function normalizeDate(\DateTimeInterface $date, \DateTimeZone $timeZone)
+{
+    return new \DateTimeImmutable(
+        '@'.mktime(0, 0, 0, $date->format('n'), $date->format('j'), $date->format('Y')),
+        $timeZone
+    );
+}
 
 $entityManager = App::getEntityManager();
 $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
 $dayRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Day');
-$now = new \DateTimeImmutable('now');
+$today = new \DateTimeImmutable('today');
+$timezone = new \DateTimeZone(App::getConfig('general.timezone'));
 
 // Collect all users
 $users = [];
@@ -55,11 +71,12 @@ foreach ($userRepository->findAll() as $user) {
 }
 
 // Register name aliases
-$aliases = App::getConfig('user.alias');
-foreach ($users as $token => $user) {
-    if (array_key_exists($token, $aliases) && is_array($aliases[$token])) {
-        foreach ($aliases[$token] as $alias) {
-            $users[$alias] =& $users[$token];
+$aliases = App::getUserAliasMap();
+$users = array_intersect_key($users, $aliases);
+foreach ($aliases as $userToken => $userAliases) {
+    if (array_key_exists($userToken, $aliases) && is_array($userAliases)) {
+        foreach ($userAliases as $userAlias) {
+            $users[$userAlias] =& $users[$userToken];
         }
     }
 }
@@ -88,14 +105,20 @@ foreach ($calendars as $calendar) {
             $description = trim($event->SUMMARY);
 
             // Skip if the event has past
-            /** @var \DateTimeImmutable $date */
-            $date = $event->DTSTART->getDateTime();
-            if ($date < $now) {
+            /** @var \DateTimeImmutable $startDate */
+            $startDate = normalizeDate(
+                $event->DTSTART->getDateTime()->setTimezone($timezone),
+                $timezone
+            );
+            $endDate = normalizeDate(
+                $event->DTEND->getDateTime()->setTimezone($timezone)->modify('-1 second'),
+                $timezone
+            );
+            if ($endDate < $today) {
                 continue;
             }
 
-            // Try to find the event in the database
-            $day = $dayRepository->findOneBy(['uuid' => $uuid]);
+            // Validate and prepare the holiday data
             $user = null;
             $name = null;
 
@@ -127,22 +150,47 @@ foreach ($calendars as $calendar) {
                     break;
             }
 
-            // If the day doesn't exist yet: Create it
-            if (!($day instanceof Day)) {
-                $day = new Day();
+            // Create or update all relevant days in the database
+            // Run through the single days
+            for ($date = clone $startDate; $date <= $endDate; $date = $date->modify('+1 day')) {
+                // If this day has already past: skip
+                if ($date < $today) {
+                    continue;
+                }
+
+                // Try to find the holiday in the database
+                $day = $dayRepository->findOneBy(['uuid' => $uuid, 'date' => $date, 'user' => $user]);
+
+                // If the holiday doesn't exist yet: Create it
+                if (!($day instanceof Day)) {
+                    $day = new Day();
+                }
+
                 $day->setUuid($uuid);
                 $day->setType($type);
+                $day->setUser($user);
+                $day->setName($name);
+                $day->setDate($date);
+
+                try {
+                    $entityManager->persist($day);
+                    $entityManager->flush();
+                    if ($user instanceof User) {
+                        echo 'Updated personal holiday '.$date->format('Y-m-d').' for user '.
+                            ($user->getName() ?: '---').PHP_EOL;
+                    } else {
+                        echo 'Updated business holiday '.$date->format('Y-m-d').sprintf(' "%s"', $name).PHP_EOL;
+                    }
+                } catch (\PDOException $e) {
+                    if ($user instanceof User) {
+                        echo 'Failed to update personal holiday '.$date->format('Y-m-d').' for user '.
+                        ($user->getName() ?: '---').'): Entry exists!'.PHP_EOL;
+                    } else {
+                        echo 'Failed to update business holiday '.$date->format('Y-m-d').
+                            sprintf(' "%s"', $name).PHP_EOL;
+                    }
+                }
             }
-
-            $day->setUser($user);
-            $day->setName($name);
-            $day->setDate($date);
-
-            echo 'Updated day '.$date->format('c').' ('.$day->getUuid().')'.PHP_EOL;
-
-            $entityManager->persist($day);
         }
     }
 }
-
-$entityManager->flush();
