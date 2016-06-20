@@ -1,0 +1,430 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Toggl dashboard\n"
+"POT-Creation-Date: 2016-06-20 21:08+0200\n"
+"PO-Revision-Date: 2016-06-20 21:08+0200\n"
+"Last-Translator: Joschi Kuphal <joschi@tollwerk.de>\n"
+"Language-Team: tollwerk GmbH <info@tollwerk.de>\n"
+"Language: de_DE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.8\n"
+"X-Poedit-Basepath: ../../../src/Toggl\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: Infrastructure/Processor/Chart.php:60
+msgid "weekday.6.abbr"
+msgstr "SA"
+
+#: Infrastructure/Processor/Chart.php:61
+msgid "weekday.0.abbr"
+msgstr "SO"
+
+#: Infrastructure/Processor/Chart.php:62
+msgid "weekday.1.abbr"
+msgstr "MO"
+
+#: Infrastructure/Processor/Chart.php:63
+msgid "weekday.2.abbr"
+msgstr "DI"
+
+#: Infrastructure/Processor/Chart.php:64
+msgid "weekday.3.abbr"
+msgstr "MI"
+
+#: Infrastructure/Processor/Chart.php:65
+msgid "weekday.4.abbr"
+msgstr "DO"
+
+#: Infrastructure/Processor/Chart.php:66
+msgid "weekday.5.abbr"
+msgstr "FR"
+
+#: Infrastructure/Processor/Chart.php:79
+msgid "chart.billable"
+msgstr "Verrechenbar"
+
+#: Infrastructure/Processor/Chart.php:83
+msgid "chart.total"
+msgstr "Gesamt"
+
+#~ msgid "email.customer.subject"
+#~ msgstr "Bestell-Bestätigung"
+
+#~ msgid "email.admin.terms"
+#~ msgstr "AGB bestätigt?"
+
+#~ msgid "email.admin.terms.1"
+#~ msgstr "Ja"
+
+#~ msgid "email.admin.terms.0"
+#~ msgstr "Nein"
+
+#~ msgid "email.customer.salutation"
+#~ msgstr "Hallo"
+
+#~ msgid "email.customer.text1"
+#~ msgstr "Vielen Dank für deine Bestellung einer individuellen Velocity mit deinem persönlichen Bild. Wir bestätigen dir hiermit den Eingang der Daten bei uns im Haus. Deine Bestellnummer ist die"
+
+#~ msgid "email.customer.text2"
+#~ msgstr "Wir prüfen nun schnellstmöglich, ob das Bild durch die Bestimmungen unserer besonderen"
+
+#~ msgid "step3.terms.link"
+#~ msgstr "https://www.ortlieb.com/de/agb/bedingungen-fuer-individuelle-sonderproduktionen"
+
+#~ msgid "email.customer.agb.link"
+#~ msgstr "AGBs"
+
+#~ msgid "email.customer.text3"
+#~ msgstr "gedeckt wird (z.B. keine Verletzung von Strafgesetzen oder Pornografie) und melden uns wieder, wenn die Tasche in Produktion ist und wir dir einen Liefertermin nennen können."
+
+#~ msgid "email.customer.text4"
+#~ msgstr "Bis dahin wünschen wir dir eine gute Zeit!"
+
+#~ msgid "email.customer.signature"
+#~ msgstr "Dein ORTLIEB-Team."
+
+#~ msgid "app.title"
+#~ msgstr "Ortlieb Velocity Konfigurator"
+
+#~ msgid "step"
+#~ msgstr "Schritt"
+
+#~ msgid "steps.text.1"
+#~ msgstr "Anleitung"
+
+#~ msgid "steps.text.2"
+#~ msgstr "Konfigurator"
+
+#~ msgid "steps.text.3"
+#~ msgstr "Daten"
+
+#~ msgid "steps.text.4"
+#~ msgstr "Check"
+
+#~ msgid "steps.text.5"
+#~ msgstr "Bestätigung"
+
+#~ msgid "step0.headline"
+#~ msgstr "Gestalte deinen persönlichen Velocity"
+
+#~ msgid "step1.headline"
+#~ msgstr "Das Ganze geht in 4 Steps."
+
+#~ msgid "step2.headline"
+#~ msgstr "Konfigurator"
+
+#~ msgid "step3.headline"
+#~ msgstr "Check"
+
+#~ msgid "step4.headline"
+#~ msgstr "Bestätigung"
+
+#~ msgid "step0.submit"
+#~ msgstr "Jetzt loslegen!"
+
+#~ msgid "step0.image.figcaption"
+#~ msgstr "Mit unserem Web-Tool kannst du deinen ganz individuellen Velocity-Rucksack produzieren lassen."
+
+#~ msgid "step1.step.1.headline"
+#~ msgstr "Step 1:"
+
+#~ msgid "step1.step.1.copy1"
+#~ msgstr "Lade auf der nächsten Seite, das Bild oder die Grafik, die du auf der Taschen abgebildet haben willst hoch. Es sollte groß genug sein, da die maximale Druckfläche 34 x 56 cm beträgt (also keine webpics). Das Motiv kannst du noch bearbeiten und anpassen, bis du mit dem Ergebnis zufrieden bist. Die vordere schwarze Patte zum Verschließen der Velocity und unser Logo ist nicht veränderbar. Bitte beachte: Da es sich hier um eine Sonderproduktion handelt, kommen spezielle Geschäftsbedingungen zur Anwendung. Du kannst dich"
+
+#~ msgid "step1.agb.link"
+#~ msgstr "https://www.ortlieb.com/de/agb/bedingungen-fuer-individuelle-sonderproduktionen"
+
+#~ msgid "step1.agb.link.text.2"
+#~ msgstr "hier"
+
+#~ msgid "step1.step.1.copy2"
+#~ msgstr "schon über den Text der Vereinbarung informieren."
+
+#~ msgid "step1.step.2.headline"
+#~ msgstr "Step 2:"
+
+#~ msgid "step1.step.2.copy"
+#~ msgstr "Gib deine persönlichen Daten ein und suche dir einen ORTLIEB-Händler in deiner Nähe aus. Dorthin wird dann später deineTasche geschickt. Schicke nun die Bestellung ab."
+
+#~ msgid "step1.step.3.headline"
+#~ msgstr "Step 3:"
+
+#~ msgid "step1.step.3.copy"
+#~ msgstr "Die Daten werden von uns auf Druckbarkeit geprüft und danach senden wir dir eine Auftragsbestätigung mit einem kleinen Bild deiner Tasche und einem Link zur Verifizierung deiner Daten und E-Mail-Adresse. Der Fertigungsauftrag wird daraufhin an unser Produktionsteam weitergegeben (Produktionszeit ca. 3 Wochen)."
+
+#~ msgid "step1.step.4.headline"
+#~ msgstr "Step 4:"
+
+#~ msgid "step1.step.4.copy"
+#~ msgstr "Du bekommst einen Anruf oder eine Nachricht von deinem Händler sobald die Tasche im Geschäft angekommen ist. Du bezahlst die Tasche direkt beim Händler bei Abholung."
+
+#~ msgid "step1.submit"
+#~ msgstr "Jetzt gestalten!"
+
+#~ msgid "step2.submit"
+#~ msgstr "Weiter"
+
+#~ msgid "step2.label.image"
+#~ msgstr "Bild auswählen"
+
+#~ msgid "error.validation.family_name"
+#~ msgstr "Bitte gebe einen Nachnamen an"
+
+#~ msgid "error.validation.given_name"
+#~ msgstr "Bitte gebe einen Vornamen an"
+
+#~ msgid "error.validation.street"
+#~ msgstr "Bitte gebe eine gültige Adresse an"
+
+#~ msgid "error.validation.street_number"
+#~ msgstr "Bitte gebe eine gültige Hausnummer an"
+
+#~ msgid "error.validation.zip_code"
+#~ msgstr "Bitte gebe eine gültige Postleitzahl an"
+
+#~ msgid "error.validation.location"
+#~ msgstr "Bitte gebe einen gültigen Ort an"
+
+#~ msgid "error.validation.email"
+#~ msgstr "Bitte gebe eine gültige E-Mail-Adresse an"
+
+#~ msgid "error.validation.birthday"
+#~ msgstr "Bitte bestätige Deine Geschäftsfähigkeit"
+
+#~ msgid "error.validation.terms"
+#~ msgstr "Bitte stimme unseren AGBs zu"
+
+#~ msgid "step3.legend"
+#~ msgstr "Persönliche Daten"
+
+#~ msgid "step3.label.given_name"
+#~ msgstr "Vorname"
+
+#~ msgid "step3.label.given_name.placeholder"
+#~ msgstr "Max"
+
+#~ msgid "step3.label.family_name"
+#~ msgstr "Nachname"
+
+#~ msgid "step3.label.family_name.placeholder"
+#~ msgstr "Mustermann"
+
+#~ msgid "step3.label.street"
+#~ msgstr "Straße"
+
+#~ msgid "step3.label.street.placeholder"
+#~ msgstr "Straße"
+
+#~ msgid "step3.label.street_number"
+#~ msgstr "Hausnummer"
+
+#~ msgid "step3.label.street_number.placeholder"
+#~ msgstr "Hausnummer"
+
+#~ msgid "step3.label.zip_code"
+#~ msgstr "PLZ"
+
+#~ msgid "step3.label.zip_code.placeholder"
+#~ msgstr "PLZ"
+
+#~ msgid "step3.label.location"
+#~ msgstr "Ort"
+
+#~ msgid "step3.label.location.placeholder"
+#~ msgstr "Ort"
+
+#~ msgid "step3.label.email"
+#~ msgstr "E-Mail"
+
+#~ msgid "step3.label.email.placeholder"
+#~ msgstr "max@mustermann.de"
+
+#~ msgid "step3.label.birthday"
+#~ msgstr "Hiermit bestätige ich, dass ich voll geschäftsfähig bin"
+
+#~ msgid "step3.label.terms"
+#~ msgstr "Hiermit bestätige ich die Kenntnisnahme und Akzeptanz der"
+
+#~ msgid "step3.terms.link.text"
+#~ msgstr "AGBs"
+
+#~ msgid "step3.label.dealer"
+#~ msgstr "Händler zur Abholung auswählen"
+
+#~ msgid "step3.label.dealer.placeholder"
+#~ msgstr "Händler"
+
+#~ msgid "step3.price.name"
+#~ msgstr "Preis:"
+
+#~ msgid "step3.price"
+#~ msgstr "€ 129,-"
+
+#~ msgid "step3.submit"
+#~ msgstr "Bestellen"
+
+#~ msgid "step4.head"
+#~ msgstr "Vielen Dank!"
+
+#~ msgid "step4.copy"
+#~ msgstr "Bitte überprüfe Deine Bestellung"
+
+#~ msgid "step4.subhead.1"
+#~ msgstr "Zahlungsinformation"
+
+#~ msgid "step4.subtext.1"
+#~ msgstr "Rechnungserhalt bei Abholung der Ware"
+
+#~ msgid "step4.subhead.2"
+#~ msgstr "Produkt"
+
+#~ msgid "step4.subtext.2"
+#~ msgstr "Velocity Custom"
+
+#~ msgid "step4..subhead.3"
+#~ msgstr "Deine Daten"
+
+#~ msgid "step4.change.data"
+#~ msgstr "Daten ändern"
+
+#~ msgid "step4.order.info"
+#~ msgstr "Du erhälst per E-Mail eine Bestellbestätigung mit weiteren Informationen. Deine Bestellung ist kostenpflichtig."
+
+#~ msgid "step4.buy.submit"
+#~ msgstr "Jetzt kaufen"
+
+#~ msgid "step4.loading.text"
+#~ msgstr "Die Verarbeitung Deiner Daten kann einige Minuten in Anspruch nehmen. Bitte schließe nicht dieses Fenster."
+
+#~ msgid "step5.head"
+#~ msgstr "Vielen Dank!"
+
+#~ msgid "step5.copy"
+#~ msgstr "Du erhältst umgehend eine Bestellbestätigung von uns."
+
+#~ msgid "step5.text.more"
+#~ msgstr "Möchtest Du eine weitere Velocity konfigurieren?"
+
+#~ msgid "step5.copy.error"
+#~ msgstr "Bitte setze dich direkt mit uns in Verbindung. Dein Auftrag konnte aus folgenden Gründen nicht verarbeitet werden:"
+
+#~ msgid "error.validation.fabric_svg_canvas"
+#~ msgstr "Das übermittelte Layout ist ungültig"
+
+#~ msgid "error.validation.fabric_svg_preview"
+#~ msgstr "Das übermittelte Vorschaubild ist ungültig"
+
+#~ msgid "error.validation.fabric_json"
+#~ msgstr "Die übermittelten JSON-Daten sind ungültig"
+
+#~ msgid "error.validation.image.size"
+#~ msgstr "Das Bild hat eine ungültige Dateigröße"
+
+#~ msgid "error.validation.image.type"
+#~ msgstr "Das Bild entspricht nicht den zulässigen Formaten"
+
+#~ msgid "error.validation.image.copy"
+#~ msgstr "Das Bild konnte nicht erfolgreich gespeichert werden"
+
+#~ msgid "error.validation.image.dimensions"
+#~ msgstr "Das Bild entspricht nicht den Mindestabmessungen"
+
+#~ msgid "message.validation.success"
+#~ msgstr "Dein Motiv ist für den Druck geeignet!"
+
+#~ msgid "message.validation.failed"
+#~ msgstr "Dein Motiv ist zu klein für den Druck in dieser Größe!"
+
+#~ msgid "error.process.status"
+#~ msgstr "Der Auftragsstatus konnte nicht erfolgreich angepasst werden."
+
+#~ msgid "error.process.print"
+#~ msgstr "Die Druckdaten konnten nicht erzeugt werden"
+
+#~ msgid "error.process.preview"
+#~ msgstr "Das Vorschaubild konnte nicht erzeugt werden"
+
+#~ msgid "error.process.xml"
+#~ msgstr "Die Bestelldaten konnten nicht erzeugt werden"
+
+#~ msgid "email.previewImageName"
+#~ msgstr "Vorschau"
+
+#~ msgid "error.process.email.customer"
+#~ msgstr "Die Bestätigungsnachricht konnte nicht verschickt werden"
+
+#~ msgid "email.admin.subject"
+#~ msgstr "Bestellung Velocity für"
+
+#~ msgid "error.process.email.admin"
+#~ msgstr "Die Bestellnachricht an Ortlieb konnte nicht verschickt werden"
+
+#~ msgid "step0.agb.link"
+#~ msgstr "https://www.ortlieb.com/de/agb/bedingungen-fuer-individuelle-sonderproduktionen"
+
+#~ msgid "step1.step.1.copy"
+#~ msgstr "Lade auf der nächsten Seite, das Bild oder die Grafik, die du auf der Taschen abgebildet haben willst hoch. Es sollte groß genug sein, da die maximale Druckfläche 34 x 56 cm beträgt (also keine webpics). Das Motiv kannst du noch bearbeiten und anpassen, bis du mit dem Ergebnis zufrieden bist. Die vordere schwarze Patte zum Verschließen der Velocity und unser Logo ist nicht veränderbar. Bitte beachte: Da es sich hier um eine Sonderproduktion handelt, kommen spezielle Geschäftsbedingungen zur Anwendung. Du kannst dich hier schon über den Text der Vereinbarung informieren."
+
+#~ msgid "step0.agb.link.text"
+#~ msgstr "Du kannst Dich hier schon über den Text der Vereinbarung informieren."
+
+#~ msgid "step4.text.birthday"
+#~ msgstr "Geburtsdatum:"
+
+#~ msgid "step3.label.birthday.placeholder"
+#~ msgstr "JJJJ-MM-DD"
+
+#~ msgid "step4..subhead.2"
+#~ msgstr "Produkt"
+
+#~ msgid "step4.text.more"
+#~ msgstr "Möchtest Du eine weitere Velocity konfigurieren?"
+
+#~ msgid "step4.copy.error"
+#~ msgstr "Bitte setze dich direkt mit uns in Verbindung. Dein Auftrag konnte aus folgenden Gründen nicht verarbeitet werden:"
+
+#~ msgid "step4.head.error"
+#~ msgstr "Es ist ein Fehler aufgetreten!"
+
+#~ msgid "error.validation.x"
+#~ msgstr "Ungültiger horizontaler Versatz"
+
+#~ msgid "error.validation.y"
+#~ msgstr "Ungültiger vertikaler Versatz"
+
+#~ msgid "error.validation.rot"
+#~ msgstr "Ungültige Rotation"
+
+#~ msgid "error.validation.scale"
+#~ msgstr "Ungültige Skalierung"
+
+#~ msgid "email.admin.terms."
+#~ msgstr "- DATENFEHLER -"
+
+#~ msgid "error.validation.fabric"
+#~ msgstr "Die Bild-Einstellungen konnten nicht gespeichert werden. (Fabric Serialisierung)"
+
+#~ msgid "step3.legend.birthday"
+#~ msgstr "Geburtsdatum"
+
+#~ msgid "error.validation.address"
+#~ msgstr "Bitte geben Sie eine gültige Adresse an"
+
+#~ msgid "step3.label.address"
+#~ msgstr "Adresse"
+
+#~ msgid "step3.label.address.placeholder"
+#~ msgstr "Lange Zeile 2\v98765 Musterstadt"
+
+#~ msgid "step0.image.alt"
+#~ msgstr "Reihe nebeneinander stehender, exemplarischer Velocity-Taschen"
+
+#~ msgid "step1.price"
+#~ msgstr "Preis: € XX,XX"
+
+#~ msgid "welcome"
+#~ msgstr "Willkommen"

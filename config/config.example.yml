@@ -17,7 +17,7 @@ user:
     costs: 2400
   system:
     costs: 5000
-general:
+common:
   timezone: "Europe/Berlin"
   working_days: [1, 2, 3, 4, 5]
   working_hours_per_day: 8

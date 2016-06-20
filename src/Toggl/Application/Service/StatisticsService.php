@@ -67,13 +67,13 @@ class StatisticsService
     {
         $year = ($year === null) ? date('Y') : intval($year);
         $dateStats = self::getDateStatistics($year);
-        $timezone = new \DateTimeZone(App::getConfig('general.timezone'));
+        $timezone = new \DateTimeZone(App::getConfig('common.timezone'));
         $userHolidays = $user->getDays($year);
         $userStats = $user->getStats($year);
         $today = new \DateTimeImmutable('today', $timezone);
 
         $stats = array_merge(
-            App::getConfig('general'),
+            App::getConfig('common'),
             App::getConfig('user.'.$user->getToken()),
             [
                 'user' => $user->getName(),
@@ -277,7 +277,7 @@ class StatisticsService
             }
 
             // Create a list of all working days
-            $timezone = new \DateTimeZone(App::getConfig('general.timezone'));
+            $timezone = new \DateTimeZone(App::getConfig('common.timezone'));
             for ($day = new \DateTime($year.'-01-01', $timezone), $weekday = $day->format('w');
                  ($day->format('Y') == $year) && ($day->format('z') < $stats['total_days']);
                  $day = $day->modify('+1 day'), $weekday = ($weekday + 1) % 7

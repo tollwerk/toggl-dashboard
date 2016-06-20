@@ -88,6 +88,12 @@ class App
      * @var ReportsClient
      */
     protected static $togglReportsClient;
+    /**
+     * App domain
+     *
+     * @var string
+     */
+    const DOMAIN = 'dashboard';
 
     /**
      * Bootstrap
@@ -134,6 +140,15 @@ class App
         $config->addCustomNumericFunction('DAYOFYEAR', DayOfYear::class);
 
         self::$entityManager = EntityManager::create($dbParams, $config);
+
+        // Set the locale
+        $locale = self::getConfig('general.locale');
+        putenv('LC_ALL='.$locale);
+        setlocale(LC_ALL, $locale);
+
+        bindtextdomain(self::DOMAIN, self::$rootDirectory.'lang');
+        bind_textdomain_codeset(self::DOMAIN, 'UTF-8');
+        textdomain(self::DOMAIN);
     }
 
     /**

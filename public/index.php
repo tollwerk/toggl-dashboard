@@ -33,13 +33,20 @@
  *  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ***********************************************************************************/
 
+namespace Tollwerk\Dashboard;
+
+use AJT\Toggl\TogglClient;
+use Tollwerk\Toggl\Application\Service\StatisticsService;
+use Tollwerk\Toggl\Domain\Model\User;
+use Tollwerk\Toggl\Infrastructure\Renderer\Html;
+use Tollwerk\Toggl\Infrastructure\Processor\Chart;
+
 //header('Content-Type: text/plain');
-header('Content-Type: application/json');
+//header('Content-Type: application/json');
 require_once dirname(__DIR__).DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR.'bootstrap.php';
 
 
 //use AJT\Toggl\ReportsClient;
-use AJT\Toggl\TogglClient;
 //use Symfony\Component\Yaml\Yaml;
 //
 //$yamlConfigStr = file_get_contents(dirname(__DIR__).DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'config.yml');
@@ -58,6 +65,42 @@ use AJT\Toggl\TogglClient;
 
 $entityManager = \Tollwerk\Toggl\Ports\App::getEntityManager();
 $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
-$user = $userRepository->find(8);
-//print_r(\Tollwerk\Toggl\Application\Service\StatisticsService::getUserStatistics($user));
-echo json_encode(\Tollwerk\Toggl\Application\Service\StatisticsService::getUserStatistics($user));
+/** @var User[] $users */
+$users = [5 => $userRepository->find(5)];
+$userStatistics = [];
+
+// Run through all users
+/** @var User $user */
+foreach ($users as $user) {
+    $userStatistics[$user->getId()] = StatisticsService::getUserStatistics($user);
+}
+
+?><!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toggl Dashboard</title>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/no-data-to-display.js"></script>
+    <script src="/js/dashboard.js"></script>
+</head>
+<body>
+<div class="time-charts"><?php
+
+    // Run through all user statistics
+    foreach ($userStatistics as $userId => $userStats):
+
+        ?><figure class="time-chart">
+            <figcaption><?= Html::h($userStats['user']); ?></figcaption>
+            <div id="time-chart-<?= $users[$userStats['user_id']]->getToken(); ?>" style="width:300px;height:200px">
+                <script>Tollwerk.Dashboard.initUserTimeChart('time-chart-<?= $users[$userStats['user_id']]->getToken(); ?>', <?= Html::json(Chart::createUserTimeChart($userStats)); ?>);</script>
+            </div>
+        </figure><?php
+
+    endforeach;
+
+    ?></div>
+</body>
+</html>

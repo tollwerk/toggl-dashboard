@@ -30,13 +30,15 @@ user:
     costs: 1000
   system:
     costs: 5000
-general:
+common:
   timezone: "Europe/Berlin"
   working_days: [1, 2, 3, 4, 5]
   working_hours_per_day: 8
 system:
   token: system
   name: Allgemein
+general:
+  locale: de_DE
 toggl:
   apiKey: "e1d49a86954369425dd936a4b39aac87"
   workspaces: [986852]
