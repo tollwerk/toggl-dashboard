@@ -34,6 +34,8 @@ common:
   timezone: "Europe/Berlin"
   working_days: [1, 2, 3, 4, 5]
   working_hours_per_day: 8
+  start_weekday: 1
+  rate: 84
 system:
   token: system
   name: Allgemein

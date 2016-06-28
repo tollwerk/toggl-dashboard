@@ -1,0 +1,7 @@
+.weeks .current {
+    font-weight: bold;
+}
+
+.time-chart {
+    display: inline-block;
+}

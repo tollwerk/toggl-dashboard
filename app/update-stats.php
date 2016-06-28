@@ -43,7 +43,7 @@ require_once __DIR__.DIRECTORY_SEPARATOR.'bootstrap.php';
 $entityManager = App::getEntityManager();
 $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
 $statsRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Stats');
-$timezone = new \DateTimeZone(App::getConfig('general.timezone'));
+$timezone = new \DateTimeZone(App::getConfig('common.timezone'));
 
 $togglReportsClient = App::getTogglReportsClient();
 $workspaces = App::getConfig('toggl.workspaces');
@@ -51,8 +51,8 @@ $todayStart = new \DateTimeImmutable('today', $timezone);
 $todayEnd = (new \DateTimeImmutable('tomorrow', $timezone))->modify('-1 second');
 $userIds = [];
 
-//$todayStart = $todayStart->modify('-7 days');
-//$todayEnd = $todayEnd->modify('-7 days');
+//$todayStart = $todayStart->modify('-1 days');
+//$todayEnd = $todayEnd->modify('-1 days');
 
 // Collect the user IDs to query
 try {

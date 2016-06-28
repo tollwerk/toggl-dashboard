@@ -207,8 +207,8 @@ class StatisticsService
             $week = intval(ltrim($entryDate->format('W'), '0'));
 
             // Test if the record is for a regular working day
-            $isWorkingDay = array_key_exists($day, $stats['workdays_by_month'])
-                && array_key_exists($day, $stats['workdays_by_month'][], $month);
+            $isWorkingDay = array_key_exists($month, $stats['workdays_by_month'])
+                && array_key_exists($day, $stats['workdays_by_month'][$month]);
 
             // Create the necessary keys if it was not a working day
             if (!$isWorkingDay) {

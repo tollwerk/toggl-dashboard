@@ -35,11 +35,7 @@
 
 namespace Tollwerk\Dashboard;
 
-use AJT\Toggl\TogglClient;
-use Tollwerk\Toggl\Application\Service\StatisticsService;
-use Tollwerk\Toggl\Domain\Model\User;
-use Tollwerk\Toggl\Infrastructure\Renderer\Html;
-use Tollwerk\Toggl\Infrastructure\Processor\Chart;
+use AJT\Toggl\TogglClient;use Tollwerk\Toggl\Application\Service\StatisticsService;use Tollwerk\Toggl\Domain\Model\User;use Tollwerk\Toggl\Infrastructure\Processor\Chart;use Tollwerk\Toggl\Infrastructure\Renderer\Html;
 
 //header('Content-Type: text/plain');
 //header('Content-Type: application/json');
@@ -66,14 +62,33 @@ require_once dirname(__DIR__).DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR.'boo
 $entityManager = \Tollwerk\Toggl\Ports\App::getEntityManager();
 $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
 /** @var User[] $users */
-$users = [5 => $userRepository->find(5)];
+//$users = [5 => $userRepository->find(5)];
+$users = [];
+/** @var User $user */
+foreach ($userRepository->findAll() as $user) {
+    $users[$user->getId()] = $user;
+}
 $userStatistics = [];
 
 // Run through all users
 /** @var User $user */
 foreach ($users as $user) {
-    $userStatistics[$user->getId()] = StatisticsService::getUserStatistics($user);
+    try {
+        $userStatistics[$user->getId()] = StatisticsService::getUserStatistics($user);
+    } catch (\InvalidArgumentException $e) {
+        continue;
+    }
 }
+
+// Determine the first monday of the year
+$firstMondayOfYear = new \DateTime('@'.mktime(0, 0, 0, 1, 1));
+$firstMondayOfYear = $firstMondayOfYear->modify('+'.((8 - $firstMondayOfYear->format('w')) % 7).' days');
+
+// Determine the current calendar week
+$currentCalendarWeek = empty($_GET['cw']) ? intval(ltrim((new \DateTimeImmutable('now'))->format('W'),
+    '0')) : intval($_GET['cw']);
+$currentCalendarWeekStart = clone $firstMondayOfYear;
+$currentCalendarWeekStart = $currentCalendarWeekStart->modify('+'.($currentCalendarWeek - 1).' weeks');
 
 ?><!DOCTYPE html>
 <html lang="de">
@@ -85,18 +100,29 @@ foreach ($users as $user) {
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/no-data-to-display.js"></script>
     <script src="/js/dashboard.js"></script>
+    <link href="/css/dashboard.css" type="text/css" rel="stylesheet"/>
 </head>
 <body>
+<nav class="weeks"><?php
+    for ($monday = clone $firstMondayOfYear; $monday->format('Y') == date('Y'); $monday = $monday->modify('+1 week')):
+        $week = ltrim($monday->format('W'), '0');
+        ?><a href="index.php?cw=<?= $week; ?>"<?php if ($week == $currentCalendarWeek) {
+        echo ' class="current"';
+    } ?>><?= $week; ?></a> <?php
+    endfor;
+    ?></nav>
 <div class="time-charts"><?php
 
     // Run through all user statistics
     foreach ($userStatistics as $userId => $userStats):
 
-        ?><figure class="time-chart">
-            <figcaption><?= Html::h($userStats['user']); ?></figcaption>
-            <div id="time-chart-<?= $users[$userStats['user_id']]->getToken(); ?>" style="width:300px;height:200px">
-                <script>Tollwerk.Dashboard.initUserTimeChart('time-chart-<?= $users[$userStats['user_id']]->getToken(); ?>', <?= Html::json(Chart::createUserTimeChart($userStats)); ?>);</script>
-            </div>
+        ?>
+        <figure class="time-chart">
+        <figcaption><?= Html::h($userStats['user']); ?></figcaption>
+        <div id="time-chart-<?= $users[$userStats['user_id']]->getToken(); ?>" style="width:300px;height:250px">
+            <script>Tollwerk.Dashboard.initUserTimeChart('time-chart-<?= $users[$userStats['user_id']]->getToken(); ?>', <?= Html::json(Chart::createUserTimeChart($userStats,
+                    $currentCalendarWeekStart)); ?>);</script>
+        </div>
         </figure><?php
 
     endforeach;

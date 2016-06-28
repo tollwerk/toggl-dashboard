@@ -57,7 +57,7 @@ function normalizeDate(\DateTimeInterface $date)
 $entityManager = App::getEntityManager();
 $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
 $dayRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Day');
-$timezone = new \DateTimeZone(App::getConfig('general.timezone'));
+$timezone = new \DateTimeZone(App::getConfig('common.timezone'));
 $today = new \DateTimeImmutable('today', $timezone);
 $today = new \DateTimeImmutable('2016-01-01');
 
