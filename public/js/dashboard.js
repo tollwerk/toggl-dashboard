@@ -11,3 +11,12 @@ Tollwerk.Dashboard.initUserTimeChart = function (id, data) {
         $('#' + id).highcharts(data);
     });
 }
+
+/**
+ * Return a rounded performance data label
+ *
+ * @returns {string} Performance
+ */
+Tollwerk.Dashboard.performance = function() {
+    return Math.round(100 * this.point.y / this.total) + '%';
+}

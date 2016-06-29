@@ -198,7 +198,6 @@ class StatisticsService
             $stats['by_day']['costs_total'][$month] = array_fill_keys(array_keys($workdays), $userCostsPerDay);
         }
 
-
         // Run through all user statistics
         foreach ($userStats as $userStat) {
             $entryDate = $userStat->getDate();

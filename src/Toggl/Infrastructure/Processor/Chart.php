@@ -94,6 +94,13 @@ class Chart
      * @var string
      */
     const COLOR_DATA_MAX = [0, 142, 0];
+    /**
+     * Average color
+     *
+     * @var string
+     */
+//    const COLOR_AVERAGE = [114, 0, 255];
+    const COLOR_AVERAGE = [127, 127, 127];
 
     /**
      * Create the user time chart data
@@ -104,16 +111,18 @@ class Chart
      * @see http://api.highcharts.com/highcharts
      * @see http://www.highcharts.com/demo/column-placement
      */
-    public static function createUserTimeChart(array $data, \DateTime $datetime = null)
+    public static function createUserWeekChart(array $data, \DateTime $datetime = null)
     {
         if ($datetime == null) {
             $datetime = new \DateTime('now');
         }
 
         // Determine the week start
+        $today = new \DateTime('now');
         $weekDay = ($datetime->format('N') + 7 - intval(App::getConfig('common.start_weekday'))) % 7;
         $currentDay = clone $datetime;
         $currentDay = $currentDay->setTime(0, 0, 0)->modify('-'.$weekDay.' days');
+        $month = $currentDay->format('n');
 
         $userWorkingHoursPerDay = $data['working_hours_per_day'];
         $minYAxisRange = $userWorkingHoursPerDay;
@@ -131,14 +140,37 @@ class Chart
             self::plotBand(4.5, 5.5, $weekendBackgroundColor),
             self::plotBand(5.5, 6.5, $weekendBackgroundColor),
         ];
+        $weekAverage = ['total' => [], 'billable' => [], 'billable_status' => []];
+        $monthAverage = ['total' => [], 'billable' => [], 'billable_status' => []];
+
+        // Run through all the workdays since the first of the month until this week
+        $monthDay = clone $datetime;
+        for ($monthDay->setDate(date('Y'), date('n'), 1); $monthDay < $currentDay; $monthDay->modify('+1 day')) {
+            $yearDay = $monthDay->format('z');
+            $day = $monthDay->format('j');
+            $weekDay = $monthDay->format('w');
+
+            if (!array_key_exists($yearDay, $data['business_holidays'])
+                && !array_key_exists($yearDay, $data['personal_holidays'])
+                && ($weekDay > 0)
+                && ($weekDay < 6)
+            ) {
+                $dayTotal = floatval(self::round($data['by_day']['time'][$month][$day] / 3600));
+                $dayBillable = floatval(self::round($data['by_day']['billable'][$month][$day] / 3600));
+                $monthAverage['total'][] = $dayTotal;
+                $monthAverage['billable'][] = $dayBillable;
+                $monthAverage['billable_status'][] = $data['by_day']['costs_status'][$month][$day];
+            }
+        }
 
         // Run through all days of the week
         for ($index = 0; $index < 7; ++$index, $currentDay->modify('+1 day')) {
             $yearDay = $currentDay->format('z');
-            $month = $currentDay->format('n');
             $day = $currentDay->format('j');
+            $dayTotal = self::round($data['by_day']['time'][$month][$day] / 3600);
+            $dayBillable = self::round($data['by_day']['billable'][$month][$day] / 3600);
             $series['total'][] = [
-                'y' => self::round($data['by_day']['time'][$month][$day] / 3600),
+                'y' => $dayTotal,
                 'color' => self::interpolateHex(
                     self::lighten(self::COLOR_DATA_MIN, .3),
                     self::lighten(self::COLOR_DATA_MAX, .3),
@@ -146,7 +178,8 @@ class Chart
                 ),
             ];
             $series['billable'][] = [
-                'y' => self::round($data['by_day']['billable'][$month][$day] / 3600),
+                'y' => $dayBillable,
+                'total' => $dayTotal,
                 'color' => self::interpolateHex(
                     self::COLOR_DATA_MIN,
                     self::COLOR_DATA_MAX,
@@ -167,7 +200,70 @@ class Chart
                     $index - .5, $index + .5, self::COLOR_HOLIDAY_PERSONAL_BG, self::COLOR_HOLIDAY,
                     _('holiday.personal')
                 );
+
+                // Else if the day should be used for the week average
+            } elseif (($currentDay->format('z') <= $today->format('z')) && ($index < 6)) {
+                $monthAverage['total'][] = $weekAverage['total'][] = $dayTotal;
+                $monthAverage['billable'][] = $weekAverage['billable'][] = $dayBillable;
+                $monthAverage['billable_status'][] = $weekAverage['billable_status'][] = $data['by_day']['costs_status'][$month][$day];
             }
+        }
+
+        // Run through the rest of the month
+        for ($yearDay = $currentDay->format('z'); ($currentDay->format('n') == $month) && ($yearDay <= $today->format('z')); $currentDay->modify('+1 day')) {
+            $yearDay = $currentDay->format('z');
+            $day = $currentDay->format('j');
+            $weekDay = $currentDay->format('w');
+
+            if (!array_key_exists($yearDay, $data['business_holidays'])
+                && !array_key_exists($yearDay, $data['personal_holidays'])
+                && ($weekDay > 0)
+                && ($weekDay < 6)
+            ) {
+                $dayTotal = floatval(self::round($data['by_day']['time'][$month][$day] / 3600));
+                $dayBillable = floatval(self::round($data['by_day']['billable'][$month][$day] / 3600));
+                $monthAverage['total'][] = $dayTotal;
+                $monthAverage['billable'][] = $dayBillable;
+                $monthAverage['billable_status'][] = $data['by_day']['costs_status'][$month][$day];
+            }
+        }
+
+//        print_r($monthAverage);
+
+        // Add the week averages
+        if (count($weekAverage['total'])) {
+            $totalAverage = self::round(array_sum($weekAverage['total']) / count($weekAverage['total']));
+            $totalStatus = $totalAverage / $data['working_hours_per_day'];
+            $series['total'][] = [
+                'y' => $totalAverage,
+                'color' => self::rgbToHex(self::lighten(self::COLOR_AVERAGE, .3)),
+            ];
+
+            $billableAverage = self::round(array_sum($weekAverage['billable']) / count($weekAverage['billable']));
+            $billableStatus = array_sum($weekAverage['billable_status']) / count($weekAverage['billable_status']);
+            $series['billable'][] = [
+                'y' => $billableAverage,
+                'total' => $totalAverage,
+                'color' => self::rgbToHex(self::COLOR_AVERAGE),
+            ];
+        }
+
+        // Add the month averages
+        if (count($monthAverage['total'])) {
+            $totalAverage = self::round(array_sum($monthAverage['total']) / count($monthAverage['total']));
+            $totalStatus = $totalAverage / $data['working_hours_per_day'];
+            $series['total'][] = [
+                'y' => $totalAverage,
+                'color' => self::rgbToHex(self::lighten(self::COLOR_AVERAGE, .3)),
+            ];
+
+            $billableAverage = self::round(array_sum($monthAverage['billable']) / count($monthAverage['billable']));
+            $billableStatus = array_sum($monthAverage['billable_status']) / count($monthAverage['billable_status']);
+            $series['billable'][] = [
+                'y' => $billableAverage,
+                'total' => $totalAverage,
+                'color' => self::rgbToHex(self::COLOR_AVERAGE),
+            ];
         }
 
         // Construct the chart data
@@ -183,6 +279,8 @@ class Chart
                     _('weekday.5.abbr'),
                     _('weekday.6.abbr'),
                     _('weekday.0.abbr'),
+                    _('week.abbr'),
+                    _('month.abbr'),
                 ],
                 'plotBands' => $plotBands
             ],
@@ -202,6 +300,9 @@ class Chart
                         'value' => $userMinBillableHoursPerDay,
                         'zIndex' => 100
                     ]
+                ],
+                'title' => [
+                    'text' => '',
                 ]
             ],
             'plotOptions' => [
@@ -218,16 +319,34 @@ class Chart
                     'data' => $series['total'],
                     'dataLabels' => [
                         'enabled' => true,
+                        'format' => sprintf(_('unit.hours'), '{y}'),
                         'style' => [
                             'color' => 'contrast',
                             'fontWeight' => 'normal',
-                            'textShadow' => '0 0 6px contrast, 0 0 3px contrast',
+                            'textShadow' => 'none',
                         ]
+                    ],
+                    'tooltip' => [
+                        'pointFormat' => '<span style="color:{point.color}">●</span> {series.name}: <b>{point.y}h</b><br/>'
                     ]
                 ],
                 [
                     'name' => _('chart.billable'),
                     'data' => $series['billable'],
+                    'dataLabels' => [
+                        'enabled' => true,
+                        'align' => 'right',
+                        'inside' => true,
+                        'formatter' => '%performance%',
+                        'style' => [
+                            'color' => 'contrast',
+                            'fontWeight' => 'normal',
+                            'textShadow' => 'none', // 0 0 6px contrast, 0 0 3px contrast
+                        ]
+                    ],
+                    'tooltip' => [
+                        'pointFormat' => '<span style="color:{point.color}">●</span> {series.name}: <b>{point.y}h</b><br/>'
+                    ]
                 ],
             ],
             'credits' => [

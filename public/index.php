@@ -62,7 +62,7 @@ require_once dirname(__DIR__).DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR.'boo
 $entityManager = \Tollwerk\Toggl\Ports\App::getEntityManager();
 $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
 /** @var User[] $users */
-//$users = [5 => $userRepository->find(5)];
+$users = [5 => $userRepository->find(5)];
 $users = [];
 /** @var User $user */
 foreach ($userRepository->findAll() as $user) {
@@ -95,6 +95,7 @@ $currentCalendarWeekStart = $currentCalendarWeekStart->modify('+'.($currentCalen
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="900; URL=index.php">
     <title>Toggl Dashboard</title>
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
@@ -115,13 +116,14 @@ $currentCalendarWeekStart = $currentCalendarWeekStart->modify('+'.($currentCalen
 
     // Run through all user statistics
     foreach ($userStatistics as $userId => $userStats):
+        $userChart = Html::json(Chart::createUserWeekChart($userStats, $currentCalendarWeekStart));
+        $userChart = preg_replace('/"%([^%]+)%"/', 'Tollwerk.Dashboard.$1', $userChart);
 
         ?>
         <figure class="time-chart">
         <figcaption><?= Html::h($userStats['user']); ?></figcaption>
-        <div id="time-chart-<?= $users[$userStats['user_id']]->getToken(); ?>" style="width:300px;height:250px">
-            <script>Tollwerk.Dashboard.initUserTimeChart('time-chart-<?= $users[$userStats['user_id']]->getToken(); ?>', <?= Html::json(Chart::createUserTimeChart($userStats,
-                    $currentCalendarWeekStart)); ?>);</script>
+        <div id="time-chart-<?= $users[$userStats['user_id']]->getToken(); ?>" style="width:300px;height:260px">
+            <script>Tollwerk.Dashboard.initUserTimeChart('time-chart-<?= $users[$userStats['user_id']]->getToken(); ?>', <?= $userChart; ?>);</script>
         </div>
         </figure><?php
 

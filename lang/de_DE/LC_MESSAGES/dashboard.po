@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Toggl dashboard\n"
-"POT-Creation-Date: 2016-06-28 18:59+0200\n"
-"PO-Revision-Date: 2016-06-28 19:00+0200\n"
+"POT-Creation-Date: 2016-06-29 20:14+0200\n"
+"PO-Revision-Date: 2016-06-29 20:15+0200\n"
 "Last-Translator: Joschi Kuphal <joschi@tollwerk.de>\n"
 "Language-Team: tollwerk GmbH <info@tollwerk.de>\n"
 "Language: de_DE\n"
@@ -15,43 +15,56 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: Infrastructure/Processor/Chart.php:121
+#: Infrastructure/Processor/Chart.php:169
 msgid "holiday.personal"
 msgstr "Urlaub"
 
-#: Infrastructure/Processor/Chart.php:133
+#: Infrastructure/Processor/Chart.php:180
 msgid "weekday.1.abbr"
 msgstr "MO"
 
-#: Infrastructure/Processor/Chart.php:134
+#: Infrastructure/Processor/Chart.php:181
 msgid "weekday.2.abbr"
 msgstr "DI"
 
-#: Infrastructure/Processor/Chart.php:135
+#: Infrastructure/Processor/Chart.php:182
 msgid "weekday.3.abbr"
 msgstr "MI"
 
-#: Infrastructure/Processor/Chart.php:136
+#: Infrastructure/Processor/Chart.php:183
 msgid "weekday.4.abbr"
 msgstr "DO"
 
-#: Infrastructure/Processor/Chart.php:137
+#: Infrastructure/Processor/Chart.php:184
 msgid "weekday.5.abbr"
 msgstr "FR"
 
-#: Infrastructure/Processor/Chart.php:138
+#: Infrastructure/Processor/Chart.php:185
 msgid "weekday.6.abbr"
 msgstr "SA"
 
-#: Infrastructure/Processor/Chart.php:139
+#: Infrastructure/Processor/Chart.php:186
 msgid "weekday.0.abbr"
 msgstr "SO"
 
-#: Infrastructure/Processor/Chart.php:171
+#: Infrastructure/Processor/Chart.php:187
+msgid "week.abbr"
+msgstr "W"
+
+#: Infrastructure/Processor/Chart.php:188
+msgid "month.abbr"
+msgstr "M"
+
+#: Infrastructure/Processor/Chart.php:223
 msgid "chart.total"
 msgstr "Gesamt"
 
-#: Infrastructure/Processor/Chart.php:183
+#: Infrastructure/Processor/Chart.php:227
+#, php-format
+msgid "unit.hours"
+msgstr "%sh"
+
+#: Infrastructure/Processor/Chart.php:239
 msgid "chart.billable"
 msgstr "Verrechenbar"
 

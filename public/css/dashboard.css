@@ -1,7 +1,15 @@
+body {
+    font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
+}
+
 .weeks .current {
     font-weight: bold;
 }
 
 .time-chart {
     display: inline-block;
+}
+
+figcaption {
+    text-align: center;
 }
