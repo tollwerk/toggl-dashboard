@@ -47,12 +47,9 @@ $timezone = new \DateTimeZone(App::getConfig('common.timezone'));
 
 $togglReportsClient = App::getTogglReportsClient();
 $workspaces = App::getConfig('toggl.workspaces');
-$todayStart = new \DateTimeImmutable('today', $timezone);
-$todayEnd = (new \DateTimeImmutable('tomorrow', $timezone))->modify('-1 second');
+$dayStart = (new \DateTimeImmutable('today', $timezone))->modify('-1 week');
+$dayEnd = (new \DateTimeImmutable('tomorrow', $timezone))->modify('-1 second')->modify('-1 week');
 $userIds = [];
-
-//$todayStart = $todayStart->modify('-1 days');
-//$todayEnd = $todayEnd->modify('-1 days');
 
 // Collect the user IDs to query
 try {
@@ -70,55 +67,63 @@ try {
 
 // Run through all workspaces
 foreach ($workspaces as $workspace) {
-    // Request a summary report
-    $report = $togglReportsClient->summary([
-        'user_agent' => 'Tollwerk Toggl Dashboard',
-        'workspace_id' => $workspace,
-        'since' => $todayStart->format('c'),
-        'until' => $todayEnd->format('c'),
-        'user_ids' => implode(',', $userIds),
-        'distinct_rates' => 'on',
-        'display_hours' => 'decimal',
-        'grouping' => 'users'
-    ]);
 
-    // Run through all user entries
-    foreach ($report['data'] as $userEntry) {
-        // Find the corresponding user
-        $user = $userRepository->findOneBy(['togglId' => $userEntry['id']]);
-        if (!($user instanceof User)) {
-            echo sprintf('Skipping unknown user ID "%s"', $userEntry['id']).PHP_EOL;
-            continue;
+    // Run through one week
+    for($day = 0; $day < 7; ++$day) {
+        // Request a summary report
+        $report = $togglReportsClient->summary([
+            'user_agent' => 'Tollwerk Toggl Dashboard',
+            'workspace_id' => $workspace,
+            'since' => $dayStart->format('c'),
+            'until' => $dayEnd->format('c'),
+            'user_ids' => implode(',', $userIds),
+            'distinct_rates' => 'on',
+            'display_hours' => 'decimal',
+            'grouping' => 'users'
+        ]);
+
+        // Run through all user entries
+        foreach ($report['data'] as $userEntry) {
+            // Find the corresponding user
+            $user = $userRepository->findOneBy(['togglId' => $userEntry['id']]);
+            if (!($user instanceof User)) {
+                echo sprintf('Skipping unknown user ID "%s"', $userEntry['id']).PHP_EOL;
+                continue;
+            }
+
+            $total = $billable = $billableSum = 0;
+
+            // Run through all time entries
+            foreach ($userEntry['items'] as $userItem) {
+                $total += intval($userItem['time'] / 1000);
+                $billable += $userItem['sum'] ? intval($userItem['time'] / 1000) : 0;
+                $billableSum += $userItem['sum'];
+            }
+
+            // Try to find an existing stats record
+            $stats = $statsRepository->findOneBy(['user' => $user, 'date' => $dayStart]);
+            if (!($stats instanceof Stats)) {
+                $stats = new Stats();
+                $stats->setUser($user);
+                $stats->setDate($dayStart);
+            }
+
+            $stats->setTotal($total);
+            $stats->setBillable($billable);
+            $stats->setBillableSum($billableSum);
+
+            try {
+                $entityManager->persist($stats);
+                $entityManager->flush();
+                echo 'Updated stats record '.$dayStart->format('Y-m-d').' (workspace '.$workspace.') for user '.$user->getName().PHP_EOL;
+            } catch (\PDOException $e) {
+                echo 'Failed to update stats record '.$dayStart->format('Y-m-d').' (workspace '.$workspace.') for user '.$user->getName().PHP_EOL;
+            }
         }
 
-        $total = $billable = $billableSum = 0;
-
-        // Run through all time entries
-        foreach ($userEntry['items'] as $userItem) {
-            $total += intval($userItem['time'] / 1000);
-            $billable += $userItem['sum'] ? intval($userItem['time'] / 1000) : 0;
-            $billableSum += $userItem['sum'];
-        }
-
-        // Try to find an existing stats record
-        $stats = $statsRepository->findOneBy(['user' => $user, 'date' => $todayStart]);
-        if (!($stats instanceof Stats)) {
-            $stats = new Stats();
-            $stats->setUser($user);
-            $stats->setDate($todayStart);
-        }
-
-        $stats->setTotal($total);
-        $stats->setBillable($billable);
-        $stats->setBillableSum($billableSum);
-
-        try {
-            $entityManager->persist($stats);
-            $entityManager->flush();
-            echo 'Updated stats record '.$todayStart->format('Y-m-d').' for user '.$user->getName().PHP_EOL;
-        } catch (\PDOException $e) {
-            echo 'Failed to update stats record '.$todayStart->format('Y-m-d').' for user '.$user->getName().PHP_EOL;
-        }
+        // Next day
+        $dayStart = $dayStart->modify('+1 day');
+        $dayEnd = $dayEnd->modify('+1 day');
     }
 }
 
