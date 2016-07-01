@@ -147,6 +147,7 @@ class Chart
         $monthDay = clone $datetime;
         for ($monthDay->setDate(date('Y'), date('n'), 1); $monthDay < $currentDay; $monthDay->modify('+1 day')) {
             $yearDay = $monthDay->format('z');
+            $month = $monthDay->format('n');
             $day = $monthDay->format('j');
             $weekDay = $monthDay->format('w');
 
@@ -166,6 +167,7 @@ class Chart
         // Run through all days of the week
         for ($index = 0; $index < 7; ++$index, $currentDay->modify('+1 day')) {
             $yearDay = $currentDay->format('z');
+            $month = $currentDay->format('n');
             $day = $currentDay->format('j');
             $dayTotal = self::round($data['by_day']['time'][$month][$day] / 3600);
             $dayBillable = self::round($data['by_day']['billable'][$month][$day] / 3600);
@@ -212,6 +214,7 @@ class Chart
         // Run through the rest of the month
         for ($yearDay = $currentDay->format('z'); ($currentDay->format('n') == $month) && ($yearDay <= $today->format('z')); $currentDay->modify('+1 day')) {
             $yearDay = $currentDay->format('z');
+            $month = $currentDay->format('n');
             $day = $currentDay->format('j');
             $weekDay = $currentDay->format('w');
 
