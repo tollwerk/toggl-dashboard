@@ -63,6 +63,7 @@ $entityManager = \Tollwerk\Toggl\Ports\App::getEntityManager();
 $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
 /** @var User[] $users */
 //$users = [5 => $userRepository->find(5), 6 => $userRepository->find(6)];
+//$users = [5 => $userRepository->find(5)];
 $users = [];
 /** @var User $user */
 foreach ($userRepository->findAll() as $user) {

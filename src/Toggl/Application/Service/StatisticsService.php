@@ -4,7 +4,7 @@
  * Toggl Dashboard
  *
  * @category    Apparat
- * @package     Apparat\Server
+ * @package     Tollwerk\Toggl
  * @subpackage  Tollwerk\Toggl\Application\Service
  * @author      Joschi Kuphal <joschi@tollwerk.de> / @jkphl
  * @copyright   Copyright © 2016 Joschi Kuphal <joschi@tollwerk.de> / @jkphl
@@ -36,6 +36,7 @@
 
 namespace Tollwerk\Toggl\Application\Service;
 
+use Tollwerk\Toggl\Domain\Model\Contract;
 use Tollwerk\Toggl\Domain\Model\Day;
 use Tollwerk\Toggl\Domain\Model\User;
 use Tollwerk\Toggl\Domain\Repository\DayRepository;
@@ -44,7 +45,7 @@ use Tollwerk\Toggl\Ports\App;
 /**
  * Statistics service
  *
- * @package Apparat\Server
+ * @package Tollwerk\Toggl
  * @subpackage Tollwerk\Toggl\Application\Service
  */
 class StatisticsService
@@ -72,15 +73,13 @@ class StatisticsService
         $userStats = $user->getStats($year);
         $today = new \DateTimeImmutable('today', $timezone);
 
-//        print_r($user);
-//        exit;
-
         $stats = array_merge(
             App::getConfig('common'),
             App::getConfig('user.'.$user->getToken()),
             [
                 'user' => $user->getName(),
                 'user_id' => $user->getId(),
+                'contracts' => [],
                 'holidays_taken' => 0,
                 'personal_holidays' => [],
                 'overtime_balance' => $user->getOvertime(),
@@ -125,6 +124,18 @@ class StatisticsService
         );
         $stats['working_days'] = array_combine($stats['working_days'], $stats['working_days']);
 
+        // Extract all user contracts
+        $yearStart = new \DateTimeImmutable($year.'-01-01', $timezone);
+        foreach ($user->getContracts($yearStart, $yearStart->modify('+1 year')) as $timestamp => $contract) {
+            $stats['contracts'][strval((new \DateTimeImmutable('@'.$timestamp))->setTimezone($timezone)->format('z'))] = [
+                'date' => $contract->getDate()->format('z'),
+                'working_days' => $contract->getWorkingDays(),
+                'working_hours_per_day' => $contract->getWorkingHoursPerDay(),
+                'holidays_per_year' => $contract->getHolidaysPerYear(),
+                'costs' => $contract->getCostsPerMonth()
+            ];
+        }
+
         // Strip all user dependent non-working days
         for ($day = new \DateTime($year.'-01-01', $timezone), $weekday = $day->format('w');
              ($day->format('Y') == $year) && ($day->format('z') < $stats['total_days']);
@@ -158,7 +169,7 @@ class StatisticsService
             }
         }
 
-        // Calculate costs per day
+        // Calculate costs per day, month and year
         $userCostsPerMonth = floatval(App::getConfig('user.'.$user->getToken().'.costs'));
         $stats['by_year']['costs_total'] = $userCostsPerMonth * 12;
         $stats['by_month']['costs_total'] = array_fill_keys(array_keys($stats['workdays_by_month']),
@@ -166,6 +177,9 @@ class StatisticsService
 
         // Clone the remaining working day structure for time entries
         foreach ($stats['workdays_by_month'] as $month => $workdays) {
+//            $firstOfMonth = new \DateTimeImmutable($year.'-'.$month.'-01', $timezone);
+//            $effectiveContract = self::getEffectiveContract($stats['contracts'], $firstOfMonth);
+
             $userCostsPerDay = $userCostsPerMonth / count($workdays);
 
             $stats['by_year']['time_total'] +=
@@ -333,5 +347,24 @@ class StatisticsService
     protected static function status($actual, $total)
     {
         return ($total == 0) ? 0 : ($actual / $total);
+    }
+
+    /**
+     * Find and return the effective user contract for a date
+     *
+     * @param array $contracts Available user contracts
+     * @param \DateTimeInterface $date Date
+     * @return Contract|null Effective contract
+     */
+    protected static function getEffectiveContract(array $contracts, \DateTimeInterface $date) {
+        $dayOfYear = $date->format('z');
+        $effectiveContract = null;
+        foreach ($contracts as $effective => $contract) {
+            if ($effective > $dayOfYear) {
+                break;
+            }
+            $effectiveContract = $contract;
+        }
+        return $effectiveContract;
     }
 }

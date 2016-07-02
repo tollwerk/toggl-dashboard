@@ -4,7 +4,7 @@
  * Toggl Dashboard
  *
  * @category    Apparat
- * @package     Apparat\Server
+ * @package     Tollwerk\Toggl
  * @subpackage  Tollwerk\Toggl\Domain\Model
  * @author      Joschi Kuphal <joschi@tollwerk.de> / @jkphl
  * @copyright   Copyright © 2016 Joschi Kuphal <joschi@tollwerk.de> / @jkphl
@@ -36,6 +36,7 @@
 
 namespace Tollwerk\Toggl\Domain\Model;
 
+use Tollwerk\Toggl\Domain\Repository\ContractRepository;
 use Tollwerk\Toggl\Domain\Repository\DayRepository;
 use Tollwerk\Toggl\Domain\Repository\StatsRepository;
 use Tollwerk\Toggl\Ports\App;
@@ -43,7 +44,7 @@ use Tollwerk\Toggl\Ports\App;
 /**
  * User
  *
- * @package Apparat\Server
+ * @package Tollwerk\Toggl
  * @subpackage Tollwerk\Toggl\Domain\Model
  * @Entity
  * @Table(name="user")
@@ -114,6 +115,13 @@ class User
      * @OneToMany(targetEntity="Tollwerk\Toggl\Domain\Model\Stats", mappedBy="user")
      */
     protected $stats;
+    /**
+     * List of all associated contracts
+     *
+     * @var Contract[]
+     * @OneToMany(targetEntity="Tollwerk\Toggl\Domain\Model\Contract", mappedBy="user")
+     */
+    protected $contracts;
 
     /**
      * Return the user ID
@@ -296,6 +304,25 @@ class User
     public function getStats($year = null)
     {
         return $this->stats;
+    }
+
+    /**
+     * Return the list of effective contracts for a given period
+     *
+     * @param \DateTimeInterface|null $from Period start
+     * @param \DateTimeInterface|null $to Period end
+     * @return Contract[] Contracts
+     */
+    public function getContracts(\DateTimeInterface $from = null, \DateTimeInterface $to = null)
+    {
+        if (($from === null) && ($to === null)) {
+            return $this->contracts;
+        }
+
+        $entityManager = App::getEntityManager();
+        /** @var ContractRepository $contractRepository */
+        $contractRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Contract');
+        return $contractRepository->getUserContractsByPeriod($this, $from, $to);
     }
 
     /**

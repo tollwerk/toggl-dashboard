@@ -4,7 +4,7 @@
  * Toggl Dashboard
  *
  * @category    Apparat
- * @package     Apparat\Server
+ * @package     Tollwerk\Toggl
  * @subpackage  Tollwerk\Toggl\Infrastructure\Processor
  * @author      Joschi Kuphal <joschi@tollwerk.de> / @jkphl
  * @copyright   Copyright © 2016 Joschi Kuphal <joschi@tollwerk.de> / @jkphl
@@ -41,7 +41,7 @@ use Tollwerk\Toggl\Ports\App;
 /**
  * Chart processor
  *
- * @package Apparat\Server
+ * @package Tollwerk\Toggl
  * @subpackage Tollwerk\Toggl\Infrastructure
  */
 class Chart

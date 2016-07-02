@@ -41,33 +41,19 @@ namespace Tollwerk\Toggl\Domain\Model;
  *
  * @package Tollwerk\Toggl
  * @subpackage Tollwerk\Toggl\Domain\Model
- * @Entity(repositoryClass="Tollwerk\Toggl\Domain\Repository\DayRepository")
- * @Table(name="day",uniqueConstraints={@UniqueConstraint(name="userdate", columns={"user_id", "date", "uuid"})})
+ * @Entity(repositoryClass="Tollwerk\Toggl\Domain\Repository\ContractRepository")
+ * @Table(name="contract",uniqueConstraints={@UniqueConstraint(name="userdate", columns={"user_id", "date"})})
  */
-class Day
+class Contract
 {
     /**
-     * Day ID
+     * Stats ID
      *
      * @var integer
      * @Id @Column(type="integer")
      * @GeneratedValue
      */
     protected $id;
-    /**
-     * Day UUID
-     *
-     * @var string
-     * @Column(type="string", length=64)
-     */
-    protected $uuid;
-    /**
-     * Day name
-     *
-     * @var string
-     * @Column(type="string", nullable=true, length=64)
-     */
-    protected $name;
     /**
      * Date
      *
@@ -79,28 +65,37 @@ class Day
      * Associated user
      *
      * @var User
-     * @ManyToOne(targetEntity="Tollwerk\Toggl\Domain\Model\User", inversedBy="days")
+     * @ManyToOne(targetEntity="Tollwerk\Toggl\Domain\Model\User", inversedBy="contracts")
      */
     protected $user;
     /**
-     * Day type
+     * Working days (bitmask; 0 = Sunday to 6 = Saturday)
      *
-     * @var int
-     * @Column(type="integer");
+     * @var integer
+     * @Column(type="integer")
      */
-    protected $type;
+    protected $workingDays;
     /**
-     * Personal holiday
+     * Working hours per day
      *
-     * @var int
+     * @var float
+     * @Column(type="float")
      */
-    const PERSONAL_HOLIDAY = 0;
+    protected $workingHoursPerDay;
     /**
-     * Business holiday
+     * Holidays per year
      *
-     * @var int
+     * @var integer
+     * @Column(type="integer")
      */
-    const BUSINESS_HOLIDAY = 1;
+    protected $holidaysPerYear;
+    /**
+     * Costs per month
+     *
+     * @var float
+     * @Column(type="float")
+     */
+    protected $costsPerMonth;
 
     /**
      * Return the day ID
@@ -169,95 +164,94 @@ class Day
     }
 
     /**
-     * Set the holiday type
+     * Return the working days
      *
-     * @return int Holiday type
+     * @return array Working days
      */
-    public function getType()
+    public function getWorkingDays()
     {
-        return $this->type;
+        $workingDays = $this->workingDays;
+        $workingDaysList = [];
+        for ($workingDay = 0; $workingDay < 7; ++$workingDay) {
+            if ($workingDays & 1) {
+                $workingDaysList[] = $workingDay;
+            }
+            $workingDays >>= 1;
+        }
+        return $workingDaysList;
     }
 
     /**
-     * Return the holiday type
+     * Set the working days
      *
-     * @param int $type Holiday type
-     * @return Day
+     * @param array $workingDaysList Working days
      */
-    public function setType($type)
+    public function setWorkingDays(array $workingDaysList)
     {
-        $this->type = $type;
-        return $this;
+        $workingDays = 0;
+        foreach ($workingDaysList as $workingDay) {
+            $workingDays |= pow(2, $workingDay);
+        }
+        $this->workingDays = $workingDays & 127;
     }
 
     /**
-     * Get the unique event UUID
+     * Return the working hours per day
      *
-     * @return string Unique event UUID
+     * @return float Working hours per day
      */
-    public function getUuid()
+    public function getWorkingHoursPerDay()
     {
-        return $this->uuid;
+        return $this->workingHoursPerDay;
     }
 
     /**
-     * Set the unique event UUID
+     * Set the working hours per day
      *
-     * @param string $uuid Unique event UUID
-     * @return Day
+     * @param float $workingHoursPerDay Working hours per day
      */
-    public function setUuid($uuid)
+    public function setWorkingHoursPerDay($workingHoursPerDay)
     {
-        $this->uuid = $uuid;
-        return $this;
+        $this->workingHoursPerDay = $workingHoursPerDay;
     }
 
     /**
-     * Return the name
+     * Return the personal holidays per year
      *
-     * @return string Name
+     * @return int Personal holidays per year
      */
-    public function getName()
+    public function getHolidaysPerYear()
     {
-        return $this->name;
+        return $this->holidaysPerYear;
     }
 
     /**
-     * Set the name
+     * Set the personal holidays per year
      *
-     * @param string $name Name
-     * @return Day
+     * @param int $holidaysPerYear Personal holidays per year
      */
-    public function setName($name)
+    public function setHolidaysPerYear($holidaysPerYear)
     {
-        $this->name = $name;
-        return $this;
+        $this->holidaysPerYear = $holidaysPerYear;
     }
 
     /**
-     * Return the day of the year
+     * Return the costs per month
      *
-     * @return int Day of the year
+     * @return float Costs per month
      */
-    public function getDayOfYear() {
-        return $this->date->format('z');
+    public function getCostsPerMonth()
+    {
+        return $this->costsPerMonth;
     }
 
     /**
-     * Return the month
+     * Set the costs per month
      *
-     * @return int Month
+     * @param float $costsPerMonth Costs per month
      */
-    public function getMonth() {
-        return $this->date->format('n');
-    }
-
-    /**
-     * Return the day
-     *
-     * @return int Day
-     */
-    public function getDay() {
-        return $this->date->format('j');
+    public function setCostsPerMonth($costsPerMonth)
+    {
+        $this->costsPerMonth = $costsPerMonth;
     }
 }

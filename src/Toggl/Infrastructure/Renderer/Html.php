@@ -4,7 +4,7 @@
  * Toggl Dashboard
  *
  * @category    Apparat
- * @package     Apparat\Server
+ * @package     Tollwerk\Toggl
  * @subpackage  Tollwerk\Toggl\Infrastructure\Renderer
  * @author      Joschi Kuphal <joschi@tollwerk.de> / @jkphl
  * @copyright   Copyright © 2016 Joschi Kuphal <joschi@tollwerk.de> / @jkphl
@@ -39,7 +39,7 @@ namespace Tollwerk\Toggl\Infrastructure\Renderer;
 /**
  * Html renderer
  *
- * @package Apparat\Server
+ * @package Tollwerk\Toggl
  * @subpackage Tollwerk\Toggl\Infrastructure
  */
 class Html

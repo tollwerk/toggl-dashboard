@@ -4,7 +4,7 @@
  * Toggl Dashboard
  *
  * @category    Apparat
- * @package     Apparat\Server
+ * @package     Tollwerk\Toggl
  * @subpackage  Tollwerk\Toggl\Infrastructure\Dql
  * @author      Joschi Kuphal <joschi@tollwerk.de> / @jkphl
  * @copyright   Copyright © 2016 Joschi Kuphal <joschi@tollwerk.de> / @jkphl
@@ -42,7 +42,7 @@ use Doctrine\ORM\Query\Lexer;
 /**
  * YearFunction ::= "YEAR" "(" ArithmeticPrimary ")"
  *
- * @package Apparat\Server
+ * @package Tollwerk\Toggl
  * @subpackage Tollwerk\Toggl\Infrastructure\Dql
  */
 class Year extends FunctionNode

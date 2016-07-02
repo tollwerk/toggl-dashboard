@@ -4,7 +4,7 @@
  * Toggl Dashboard
  *
  * @category    Apparat
- * @package     Apparat\Server
+ * @package     Tollwerk\Toggl
  * @subpackage  Tollwerk\Toggl\Domain\Model
  * @author      Joschi Kuphal <joschi@tollwerk.de> / @jkphl
  * @copyright   Copyright © 2016 Joschi Kuphal <joschi@tollwerk.de> / @jkphl
@@ -39,7 +39,7 @@ namespace Tollwerk\Toggl\Domain\Model;
 /**
  * Day
  *
- * @package Apparat\Server
+ * @package Tollwerk\Toggl
  * @subpackage Tollwerk\Toggl\Domain\Model
  * @Entity(repositoryClass="Tollwerk\Toggl\Domain\Repository\StatsRepository")
  * @Table(name="stats",uniqueConstraints={@UniqueConstraint(name="userdate", columns={"user_id", "date"})})
