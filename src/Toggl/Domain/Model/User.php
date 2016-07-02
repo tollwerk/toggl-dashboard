@@ -80,6 +80,27 @@ class User
      */
     protected $token;
     /**
+     * Overtime date
+     *
+     * @var \DateTime
+     * @Column(type="date")
+     */
+    protected $overtimeDate;
+    /**
+     * Overtime offset
+     *
+     * @var float
+     * @Column(type="float")
+     */
+    protected $overtimeOffset;
+    /**
+     * Overtime
+     *
+     * @var float
+     * @Column(type="float")
+     */
+    protected $overtime;
+    /**
      * List of all associated days
      *
      * @var Day[]
@@ -183,6 +204,72 @@ class User
     }
 
     /**
+     * Return the overtime offset date
+     *
+     * @return \DateTime Overtime offset date
+     */
+    public function getOvertimeDate()
+    {
+        return $this->overtimeDate;
+    }
+
+    /**
+     * Set the overtime offset date
+     *
+     * @param \DateTime $overtimeDate Overtime offset date
+     * @return User
+     */
+    public function setOvertimeDate($overtimeDate)
+    {
+        $this->overtimeDate = $overtimeDate;
+        return $this;
+    }
+
+    /**
+     * Return the overtime offset
+     *
+     * @return float Overtime offset
+     */
+    public function getOvertimeOffset()
+    {
+        return $this->overtimeOffset;
+    }
+
+    /**
+     * Set the overtime offset
+     *
+     * @param float $overtimeOffset Overtime offset
+     * @return User
+     */
+    public function setOvertimeOffset($overtimeOffset)
+    {
+        $this->overtimeOffset = $overtimeOffset;
+        return $this;
+    }
+
+    /**
+     * Return the current overtime
+     *
+     * @return float Current overtime
+     */
+    public function getOvertime()
+    {
+        return $this->overtime;
+    }
+
+    /**
+     * Set the current overtime
+     *
+     * @param float $overtime Current overtime
+     * @return User
+     */
+    public function setOvertime($overtime)
+    {
+        $this->overtime = $overtime;
+        return $this;
+    }
+
+    /**
      * Return the list of associated days
      *
      * @param int|null $year Optional: year
@@ -209,10 +296,19 @@ class User
     public function getStats($year = null)
     {
         return $this->stats;
+    }
 
+    /**
+     * Return the user stats for a particular date (if any)
+     *
+     * @param \DateTimeInterface $date Date
+     * @return null|Stats User stats for the date
+     */
+    public function getDateStats(\DateTimeInterface $date)
+    {
         $entityManager = App::getEntityManager();
         /** @var StatsRepository $statsRepository */
         $statsRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Stats');
-        return $statsRepository->getUserStats($this, $year);
+        return $statsRepository->getUserStatsByDate($this, $date);
     }
 }

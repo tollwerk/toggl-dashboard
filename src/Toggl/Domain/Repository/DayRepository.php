@@ -60,7 +60,6 @@ class DayRepository extends EntityRepository
     public function getBusinessHolidays($year)
     {
         try {
-
             $qb = App::getEntityManager()->createQueryBuilder();
             $qb->select('d')
                 ->from('Tollwerk\Toggl\Domain\Model\Day', 'd')
@@ -83,7 +82,6 @@ class DayRepository extends EntityRepository
     public function getPersonalHolidays(User $user, $year)
     {
         try {
-
             $qb = App::getEntityManager()->createQueryBuilder();
             $qb->select('d')
                 ->from('Tollwerk\Toggl\Domain\Model\Day', 'd')
@@ -93,6 +91,35 @@ class DayRepository extends EntityRepository
                 ->setParameter('user', $user);
 //            echo $qb->getQuery()->getSQL();
             return $qb->getQuery()->execute();
+        } catch (QueryException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    /**
+     * Test if a particular day is a business or personal holiday for a particular user
+     *
+     * @param User $user User
+     * @param \DateTimeInterface $date Date
+     * @return bool Date is a holiday
+     */
+    public function isUserHoliday(User $user, \DateTimeInterface $date) {
+        try {
+            $qb = App::getEntityManager()->createQueryBuilder();
+            $qb->select($qb->expr()->count('d.id'))
+                ->from('Tollwerk\Toggl\Domain\Model\Day', 'd')
+                ->where('d.date = :date')
+                ->andWhere($qb->expr()->orX(
+                    $qb->expr()->eq('d.type', Day::BUSINESS_HOLIDAY),
+                    $qb->expr()->andX(
+                        $qb->expr()->eq('d.type', Day::PERSONAL_HOLIDAY),
+                        $qb->expr()->eq('d.user', ':user')
+                    )
+                ))
+                ->setParameter('user', $user)
+                ->setParameter('date', $date->format('Y-m-d'));
+            $result = $qb->getQuery()->execute();
+            return boolval(current($result[0]));
         } catch (QueryException $e) {
             echo $e->getMessage();
         }

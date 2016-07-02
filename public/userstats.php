@@ -36,11 +36,36 @@
 namespace Tollwerk\Dashboard;
 
 use Tollwerk\Toggl\Application\Service\StatisticsService;
+use Tollwerk\Toggl\Domain\Model\User;
+use Tollwerk\Toggl\Infrastructure\Renderer\Html;
 
-header('Content-Type: application/json');
 require_once dirname(__DIR__).DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR.'bootstrap.php';
 
 $entityManager = \Tollwerk\Toggl\Ports\App::getEntityManager();
 $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
-$user = $userRepository->find(5);
-die(json_encode(StatisticsService::getUserStatistics($user)));
+
+if (empty($_GET['user'])):
+    ?><!DOCTYPE html>
+<html lang="de">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="refresh" content="900; URL=index.php">
+        <title>Toggl Dashboard</title>
+        <link href="/css/dashboard.css" type="text/css" rel="stylesheet"/>
+    </head>
+    <body>
+        <h1>Please pick a user</h1>
+        <ul><?php
+            /** @var User $user */
+            foreach ($userRepository->findAll() as $user):
+                ?><li><a href="userstats.php?user=<?= $user->getId(); ?>"><?= Html::h($user->getName()).' ('.$user->getId().')'; ?></a></li><?php
+            endforeach;
+        ?></ul>
+    </body>
+</html><?php
+else:
+    header('Content-Type: application/json');
+    $user = $userRepository->find(intval($_GET['user']));
+    die(json_encode(StatisticsService::getUserStatistics($user)));
+endif;

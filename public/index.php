@@ -62,7 +62,7 @@ require_once dirname(__DIR__).DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR.'boo
 $entityManager = \Tollwerk\Toggl\Ports\App::getEntityManager();
 $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
 /** @var User[] $users */
-$users = [5 => $userRepository->find(5)];
+//$users = [5 => $userRepository->find(5), 6 => $userRepository->find(6)];
 $users = [];
 /** @var User $user */
 foreach ($userRepository->findAll() as $user) {
@@ -118,13 +118,27 @@ $currentCalendarWeekStart = $currentCalendarWeekStart->modify('+'.($currentCalen
     foreach ($userStatistics as $userId => $userStats):
         $userChart = Html::json(Chart::createUserWeekChart($userStats, $currentCalendarWeekStart));
         $userChart = preg_replace('/"%([^%]+)%"/', 'Tollwerk.Dashboard.$1', $userChart);
+        $userOvertime = number_format($userStats['overtime_balance'], 2);
+        $userOvertimeClass = ($userStats['overtime_balance'] >= 0) ? 'positive' : 'negative';
+        $userRemainingHolidays = $userStats['holidays_per_year'] - count($userStats['personal_holidays']);
+        $userRemainingHolidaysClass = ($userRemainingHolidays >= 0) ? 'positive' : 'negative';
 
         ?>
         <figure class="time-chart">
-        <figcaption><?= Html::h($userStats['user']); ?></figcaption>
-        <div id="time-chart-<?= $users[$userStats['user_id']]->getToken(); ?>" style="width:300px;height:260px">
-            <script>Tollwerk.Dashboard.initUserTimeChart('time-chart-<?= $users[$userStats['user_id']]->getToken(); ?>', <?= $userChart; ?>);</script>
-        </div>
+            <figcaption><?= Html::h($userStats['user']); ?></figcaption>
+            <div id="time-chart-<?= $users[$userStats['user_id']]->getToken(); ?>" style="width:300px;height:260px">
+                <script>Tollwerk.Dashboard.initUserTimeChart('time-chart-<?= $users[$userStats['user_id']]->getToken(); ?>', <?= $userChart; ?>);</script>
+            </div>
+            <dl>
+                <dt><?= _('info.overtime'); ?></dt>
+                <dd class="<?= $userOvertimeClass; ?>"><?= Html::h($userOvertime); ?></dd>
+                <dt><?= sprintf(_('info.holiday'), $currentCalendarWeekStart->format('Y')); ?></dt>
+                <dd><?= $userStats['holidays_per_year']; ?></dd>
+                <dt><?= sprintf(_('info.holiday.taken'), $currentCalendarWeekStart->format('Y')); ?></dt>
+                <dd><?= $userStats['holidays_taken']; ?></dd>
+                <dt><?= sprintf(_('info.holiday.remaining'), $currentCalendarWeekStart->format('Y')); ?></dt>
+                <dd class="<?= $userRemainingHolidaysClass; ?>"><?= $userRemainingHolidays; ?></dd>
+            </dl>
         </figure><?php
 
     endforeach;

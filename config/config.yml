@@ -26,7 +26,7 @@ user:
     holidays_per_year: 16
     costs: 1666
   jule:
-    holidays_per_year: 25
+    holidays_per_year: 26
     costs: 3022
   system:
     costs: 5000
@@ -39,6 +39,9 @@ common:
 system:
   token: system
   name: Allgemein
+  costs:
+    rent: 1000
+    telecom: 100
 general:
   locale: de_DE
 toggl:

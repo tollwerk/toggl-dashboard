@@ -72,6 +72,9 @@ class StatisticsService
         $userStats = $user->getStats($year);
         $today = new \DateTimeImmutable('today', $timezone);
 
+//        print_r($user);
+//        exit;
+
         $stats = array_merge(
             App::getConfig('common'),
             App::getConfig('user.'.$user->getToken()),
@@ -80,6 +83,7 @@ class StatisticsService
                 'user_id' => $user->getId(),
                 'holidays_taken' => 0,
                 'personal_holidays' => [],
+                'overtime_balance' => $user->getOvertime(),
                 'by_year' => [
                     'time' => 0,
                     'time_total' => 0,
@@ -213,39 +217,61 @@ class StatisticsService
             if (!$isWorkingDay) {
                 $stats['workdays_by_month'][$month][$day] = $week;
                 $stats['by_day']['time'][$month][$day] =
+                $stats['by_day']['time_total'][$month][$day] =
+                $stats['by_day']['time_status'][$month][$day] =
                 $stats['by_day']['billable'][$month][$day] =
-                $stats['by_day']['billable_sum'][$month][$day] = 0;
+                $stats['by_day']['billable_sum'][$month][$day] =
+                $stats['by_day']['costs_total'][$month][$day] =
+                $stats['by_day']['costs_status'][$month][$day] = 0;
             }
 
             $stats['by_year']['time'] += $userStat->getTotal();
-            $stats['by_year']['time_status'] = $stats['by_year']['time'] / $stats['by_year']['time_total'];
+            $stats['by_year']['time_status'] = self::status(
+                $stats['by_year']['time'],
+                $stats['by_year']['time_total']
+            );
             $stats['by_year']['billable'] += $userStat->getBillable();
             $stats['by_year']['billable_sum'] += $userStat->getBillableSum();
-            $stats['by_year']['costs_status'] = $stats['by_year']['billable_sum'] / $stats['by_year']['costs_total'];
+            $stats['by_year']['costs_status'] = self::status(
+                $stats['by_year']['billable_sum'],
+                $stats['by_year']['costs_total']
+            );
 
             $stats['by_month']['time'][$month] += $userStat->getTotal();
-            $stats['by_month']['time_status'][$month] = $stats['by_month']['time'][$month] /
-                $stats['by_month']['time_total'][$month];
+            $stats['by_month']['time_status'][$month] = self::status(
+                $stats['by_month']['time'][$month],
+                $stats['by_month']['time_total'][$month]
+            );
             $stats['by_month']['billable'][$month] += $userStat->getBillable();
             $stats['by_month']['billable_sum'][$month] += $userStat->getBillableSum();
-            $stats['by_month']['costs_status'][$month] = $stats['by_month']['billable_sum'][$month] /
-                $stats['by_month']['costs_total'][$month];
+            $stats['by_month']['costs_status'][$month] = self::status(
+                $stats['by_month']['billable_sum'][$month],
+                $stats['by_month']['costs_total'][$month]
+            );
 
             $stats['by_week']['time'][$week] += $userStat->getTotal();
-            $stats['by_week']['time_status'][$week] = $stats['by_week']['time'][$week] /
-                $stats['by_week']['time_total'][$week];
+            $stats['by_week']['time_status'][$week] = self::status(
+                $stats['by_week']['time'][$week],
+                $stats['by_week']['time_total'][$week]
+            );
             $stats['by_week']['billable'][$week] += $userStat->getBillable();
             $stats['by_week']['billable_sum'][$week] += $userStat->getBillableSum();
-            $stats['by_week']['costs_status'][$week] = $stats['by_week']['billable_sum'][$week] /
-                $stats['by_week']['costs_total'][$week];
+            $stats['by_week']['costs_status'][$week] = self::status(
+                $stats['by_week']['billable_sum'][$week],
+                $stats['by_week']['costs_total'][$week]
+            );
 
             $stats['by_day']['time'][$month][$day] += $userStat->getTotal();
-            $stats['by_day']['time_status'][$month][$day] = $stats['by_day']['time'][$month][$day] /
-                $stats['by_day']['time_total'][$month][$day];
+            $stats['by_day']['time_status'][$month][$day] = self::status(
+                $stats['by_day']['time'][$month][$day],
+                $stats['by_day']['time_total'][$month][$day]
+            );
             $stats['by_day']['billable'][$month][$day] += $userStat->getBillable();
             $stats['by_day']['billable_sum'][$month][$day] += $userStat->getBillableSum();
-            $stats['by_day']['costs_status'][$month][$day] = $stats['by_day']['billable_sum'][$month][$day] /
-                $stats['by_day']['costs_total'][$month][$day];
+            $stats['by_day']['costs_status'][$month][$day] = self::status(
+                $stats['by_day']['billable_sum'][$month][$day],
+                $stats['by_day']['costs_total'][$month][$day]
+            );
         }
 
         return $stats;
@@ -295,5 +321,17 @@ class StatisticsService
         }
 
         return self::$dateStatistics[$year];
+    }
+
+    /**
+     * Division-by-zero safe status calculation
+     *
+     * @param float $actual Actual value
+     * @param float $total Total value
+     * @return float|null Status
+     */
+    protected static function status($actual, $total)
+    {
+        return ($total == 0) ? 0 : ($actual / $total);
     }
 }

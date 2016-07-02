@@ -69,7 +69,7 @@ try {
 foreach ($workspaces as $workspace) {
 
     // Run through one week
-    for($day = 0; $day < 7; ++$day) {
+    for($day = 0; $day < 8; ++$day) {
         // Request a summary report
         $report = $togglReportsClient->summary([
             'user_agent' => 'Tollwerk Toggl Dashboard',
@@ -128,3 +128,5 @@ foreach ($workspaces as $workspace) {
 }
 
 $entityManager->flush();
+
+require_once __DIR__.DIRECTORY_SEPARATOR.'update-overtimes.php';

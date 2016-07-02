@@ -34,39 +34,54 @@
  *  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ***********************************************************************************/
 
-use Tollwerk\Toggl\Ports\App;
+use Tollwerk\Toggl\Domain\Model\Stats;
 use Tollwerk\Toggl\Domain\Model\User;
+use Tollwerk\Toggl\Ports\App;
 
 require_once __DIR__.DIRECTORY_SEPARATOR.'bootstrap.php';
 
 $entityManager = App::getEntityManager();
 $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
+$statsRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Stats');
+$dayRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Day');
+$timezone = new \DateTimeZone(App::getConfig('common.timezone'));
+$today = new \DateTimeImmutable('today', $timezone);
 
-$togglClient = App::getTogglClient();
-$workspaces = App::getConfig('toggl.workspaces');
+// Run through all users
+/** @var User $user */
+foreach ($userRepository->findAll() as $user) {
+    try {
+        echo 'Updating overtimes of '.$user->getName().PHP_EOL;
 
-// Run through all workspaces
-foreach ($workspaces as $workspace) {
-    $workspaceUsers = $togglClient->getWorkspaceUsers(['id' => $workspace]);
+        $userConfig = array_merge(App::getConfig('common'), App::getConfig('user.'.$user->getToken()));
+        $userWorkingDays = array_combine($userConfig['working_days'], $userConfig['working_days']);
+        $userWorkingHoursPerDay = floatval($userConfig['working_hours_per_day']);
+        $userWorkingTimeBalance = $user->getOvertimeOffset();
 
-    // Run through all workspace users
-    foreach ($workspaceUsers as $workspaceUser) {
+        $userOvertimeDate = $user->getOvertimeDate();
+        while ($userOvertimeDate <= $today) {
 
-        // Try to find the user in the database
-        $user = $userRepository->findOneBy(['togglId' => $workspaceUser['id']]);
+            // If this is a working day for the user
+            if (array_key_exists($userOvertimeDate->format('w'), $userWorkingDays)
+                && !$dayRepository->isUserHoliday($user, $userOvertimeDate)
+            ) {
+                $userWorkingTimeBalance -= $userWorkingHoursPerDay;
+            }
 
-        // If the user doesn't already exists
-        if (!($user instanceof User)) {
-            $user = new User();
-            $user->setTogglId($workspaceUser['id']);
+            $userStats = $user->getDateStats($userOvertimeDate);
+            if ($userStats instanceof Stats) {
+                $userWorkingTimeBalance += $userStats->getTotal() / 3600;
+            }
+
+            echo 'Working time balance of '.$user->getName().' for '.$userOvertimeDate->format('Y-m-d').': '.$userWorkingTimeBalance.PHP_EOL;
+
+            $userOvertimeDate = $userOvertimeDate->modify('+1 day');
         }
 
-        $user->setName($workspaceUser['fullname']);
-        $user->setToken(strtolower($workspaceUser['fullname']));
+        $user->setOvertime($userWorkingTimeBalance);
 
-        echo 'Updated user '.$user->getName().PHP_EOL;
-
-        $entityManager->persist($user);
+    } catch (\InvalidArgumentException $e) {
+        continue;
     }
 }
 

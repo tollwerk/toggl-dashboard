@@ -1,5 +1,6 @@
 body {
     font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
+    background-color: #eee;
 }
 
 .weeks .current {
@@ -12,4 +13,25 @@ body {
 
 figcaption {
     text-align: center;
+    font-weight: bold;
+}
+
+dl {
+    font-size: 11px;
+}
+
+dt {
+    float: left;
+    clear: left;
+    width: 200px;
+}
+
+dd {
+    margin-left: 200px;
+    text-align: right;
+}
+
+.negative {
+    color: #f00;
+    font-weight: bold;
 }

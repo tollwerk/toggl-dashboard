@@ -63,13 +63,13 @@ class Chart
      *
      * @var string
      */
-    const COLOR_HOLIDAY_BUSINESS_BG = '#c1e1ff';
+    const COLOR_HOLIDAY_BUSINESS_BG = '#d2e9ff';
     /**
      * Personal holiday color
      *
      * @var string
      */
-    const COLOR_HOLIDAY_PERSONAL_BG = '#c1e1ff';
+    const COLOR_HOLIDAY_PERSONAL_BG = '#d2e9ff';
     /**
      * Billable plot line color
      *
@@ -113,6 +113,7 @@ class Chart
      */
     public static function createUserWeekChart(array $data, \DateTime $datetime = null)
     {
+        trigger_error($data['user']);
         if ($datetime == null) {
             $datetime = new \DateTime('now');
         }
@@ -128,8 +129,8 @@ class Chart
         $minYAxisRange = $userWorkingHoursPerDay;
 
         // The minimum billable hours per day
-        $userMinBillableHoursPerDay = $data['by_day']['costs_total'][$currentDay->format('n')][$currentDay->format('j')]
-            / $data['rate'];
+        $userMinBillableHoursPerDay =
+            $data['by_day']['costs_total'][$currentDay->format('n')][$currentDay->format('j')] / $data['rate'];
 
         // Colors
         $weekendBackgroundColor = '#eeeeee';
@@ -169,28 +170,15 @@ class Chart
             $yearDay = $currentDay->format('z');
             $month = $currentDay->format('n');
             $day = $currentDay->format('j');
-            $dayTotal = self::round($data['by_day']['time'][$month][$day] / 3600);
-            $dayBillable = self::round($data['by_day']['billable'][$month][$day] / 3600);
-            $series['total'][] = [
-                'y' => $dayTotal,
-                'color' => self::interpolateHex(
-                    self::lighten(self::COLOR_DATA_MIN, .3),
-                    self::lighten(self::COLOR_DATA_MAX, .3),
-                    $data['by_day']['time_status'][$month][$day]
-                ),
-            ];
-            $series['billable'][] = [
-                'y' => $dayBillable,
-                'total' => $dayTotal,
-                'color' => self::interpolateHex(
-                    self::COLOR_DATA_MIN,
-                    self::COLOR_DATA_MAX,
-                    $data['by_day']['costs_status'][$month][$day]
-                ),
-            ];
+            $dayTotal = empty($data['by_day']['time'][$month][$day]) ?
+                null : self::round($data['by_day']['time'][$month][$day] / 3600);
+            $dayBillable = empty($data['by_day']['billable'][$month][$day]) ?
+                null : self::round($data['by_day']['billable'][$month][$day] / 3600);
+            $isWorkingDay = array_key_exists($currentDay->format('w'), $data['working_days']);
 
             // If this is a business holiday
             if (array_key_exists($yearDay, $data['business_holidays'])) {
+                $isWorkingDay = false;
                 $plotBands[] = self::plotBand(
                     $index - .5, $index + .5, self::COLOR_HOLIDAY_BUSINESS_BG, self::COLOR_HOLIDAY,
                     $data['business_holidays'][$yearDay]
@@ -198,6 +186,7 @@ class Chart
 
                 // If this is a personal holiday
             } elseif (array_key_exists($yearDay, $data['personal_holidays'])) {
+                $isWorkingDay = false;
                 $plotBands[] = self::plotBand(
                     $index - .5, $index + .5, self::COLOR_HOLIDAY_PERSONAL_BG, self::COLOR_HOLIDAY,
                     _('holiday.personal')
@@ -207,8 +196,30 @@ class Chart
             } elseif (($currentDay->format('z') <= $today->format('z')) && ($index < 6)) {
                 $monthAverage['total'][] = $weekAverage['total'][] = $dayTotal;
                 $monthAverage['billable'][] = $weekAverage['billable'][] = $dayBillable;
-                $monthAverage['billable_status'][] = $weekAverage['billable_status'][] = $data['by_day']['costs_status'][$month][$day];
+                $monthAverage['billable_status'][] = $weekAverage['billable_status'][] =
+                    empty($data['by_day']['costs_status'][$month][$day]) ?
+                        0 : $data['by_day']['costs_status'][$month][$day];
             }
+
+            $series['total'][] = [
+                'y' => $dayTotal,
+                'color' => $isWorkingDay ? self::interpolateHex(
+                    self::lighten(self::COLOR_DATA_MIN, .3),
+                    self::lighten(self::COLOR_DATA_MAX, .3),
+                    empty($data['by_day']['time_status'][$month][$day]) ?
+                        0 : $data['by_day']['time_status'][$month][$day]
+                ) : self::rgbToHex(self::lighten(self::hexToRgb(self::COLOR_HOLIDAY), .5)),
+            ];
+            $series['billable'][] = [
+                'y' => $dayBillable,
+                'total' => $dayTotal,
+                'color' => $isWorkingDay ? self::interpolateHex(
+                    self::COLOR_DATA_MIN,
+                    self::COLOR_DATA_MAX,
+                    empty($data['by_day']['costs_status'][$month][$day]) ?
+                        0 : $data['by_day']['costs_status'][$month][$day]
+                ) : self::COLOR_HOLIDAY,
+            ];
         }
 
         // Run through the rest of the month
@@ -439,6 +450,16 @@ class Chart
         $hex .= str_pad(dechex($rgb[2]), 2, "0", STR_PAD_LEFT);
 
         return $hex; // returns the hex value including the number sign (#)
+    }
+
+    /**
+     * Convert a hex color to RGB values
+     *
+     * @param string $hex Hex color
+     * @return array RGB color
+     */
+    protected static function hexToRgb($hex) {
+        return sscanf($hex, "#%02x%02x%02x");
     }
 
     /**

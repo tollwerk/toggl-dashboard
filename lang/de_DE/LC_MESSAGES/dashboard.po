@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Toggl dashboard\n"
-"POT-Creation-Date: 2016-06-29 20:14+0200\n"
-"PO-Revision-Date: 2016-06-29 20:15+0200\n"
+"POT-Creation-Date: 2016-07-02 16:02+0200\n"
+"PO-Revision-Date: 2016-07-02 16:03+0200\n"
 "Last-Translator: Joschi Kuphal <joschi@tollwerk.de>\n"
 "Language-Team: tollwerk GmbH <info@tollwerk.de>\n"
 "Language: de_DE\n"
@@ -10,61 +10,81 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.8.8\n"
-"X-Poedit-Basepath: ../../../src/Toggl\n"
+"X-Poedit-Basepath: ../../..\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPath-0: src/Toggl\n"
+"X-Poedit-SearchPath-1: public\n"
 
-#: Infrastructure/Processor/Chart.php:169
+#: public/index.php:133
+msgid "info.overtime"
+msgstr "Überstunden-Saldo"
+
+#: public/index.php:135
+#, php-format
+msgid "info.holiday"
+msgstr "Urlaubstage %s"
+
+#: public/index.php:137
+#, php-format
+msgid "info.holiday.taken"
+msgstr "Bisherige Urlaubstage %s"
+
+#: public/index.php:139
+#, php-format
+msgid "info.holiday.remaining"
+msgstr "Unverplante Urlaubstage %s"
+
+#: src/Toggl/Infrastructure/Processor/Chart.php:192
 msgid "holiday.personal"
 msgstr "Urlaub"
 
-#: Infrastructure/Processor/Chart.php:180
+#: src/Toggl/Infrastructure/Processor/Chart.php:289
 msgid "weekday.1.abbr"
 msgstr "MO"
 
-#: Infrastructure/Processor/Chart.php:181
+#: src/Toggl/Infrastructure/Processor/Chart.php:290
 msgid "weekday.2.abbr"
 msgstr "DI"
 
-#: Infrastructure/Processor/Chart.php:182
+#: src/Toggl/Infrastructure/Processor/Chart.php:291
 msgid "weekday.3.abbr"
 msgstr "MI"
 
-#: Infrastructure/Processor/Chart.php:183
+#: src/Toggl/Infrastructure/Processor/Chart.php:292
 msgid "weekday.4.abbr"
 msgstr "DO"
 
-#: Infrastructure/Processor/Chart.php:184
+#: src/Toggl/Infrastructure/Processor/Chart.php:293
 msgid "weekday.5.abbr"
 msgstr "FR"
 
-#: Infrastructure/Processor/Chart.php:185
+#: src/Toggl/Infrastructure/Processor/Chart.php:294
 msgid "weekday.6.abbr"
 msgstr "SA"
 
-#: Infrastructure/Processor/Chart.php:186
+#: src/Toggl/Infrastructure/Processor/Chart.php:295
 msgid "weekday.0.abbr"
 msgstr "SO"
 
-#: Infrastructure/Processor/Chart.php:187
+#: src/Toggl/Infrastructure/Processor/Chart.php:296
 msgid "week.abbr"
 msgstr "W"
 
-#: Infrastructure/Processor/Chart.php:188
+#: src/Toggl/Infrastructure/Processor/Chart.php:297
 msgid "month.abbr"
 msgstr "M"
 
-#: Infrastructure/Processor/Chart.php:223
+#: src/Toggl/Infrastructure/Processor/Chart.php:332
 msgid "chart.total"
 msgstr "Gesamt"
 
-#: Infrastructure/Processor/Chart.php:227
+#: src/Toggl/Infrastructure/Processor/Chart.php:336
 #, php-format
 msgid "unit.hours"
 msgstr "%sh"
 
-#: Infrastructure/Processor/Chart.php:239
+#: src/Toggl/Infrastructure/Processor/Chart.php:348
 msgid "chart.billable"
 msgstr "Verrechenbar"
 

@@ -26,6 +26,9 @@ common:
 system:
   token: system
   name: Allgemein
+  costs:
+    rent: 1000
+    telecom: 100
 toggl:
   apiKey: "8ebaedbfb2b5724cb537fdb5118c449e"
   workspaces: [926872]

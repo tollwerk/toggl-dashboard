@@ -39,7 +39,7 @@ namespace Tollwerk\Toggl\Domain\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\QueryException;
-use Tollwerk\Toggl\Domain\Model\Day;
+use Tollwerk\Toggl\Domain\Model\Stats;
 use Tollwerk\Toggl\Domain\Model\User;
 use Tollwerk\Toggl\Ports\App;
 
@@ -58,7 +58,7 @@ class StatsRepository extends EntityRepository
      * @param int $year Year
      * @return array User stats
      */
-    public function getUserStats(User $user, $year)
+    public function getUserStatsByYear(User $user, $year)
     {
         try {
             $qb = App::getEntityManager()->createQueryBuilder();
@@ -69,6 +69,54 @@ class StatsRepository extends EntityRepository
                 ->setParameter('user', $user);
 //            echo $qb->getQuery()->getSQL();
             return $qb->getQuery()->execute();
+        } catch (QueryException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    /**
+     * Return all stats of a user starting at a particular offset date
+     *
+     * @param User $user User
+     * @param \DateTimeInterface $offsetDate Offset date
+     * @return array User stats
+     */
+    public function getUserStatsByOffset(User $user, \DateTimeInterface $offsetDate)
+    {
+        try {
+            $qb = App::getEntityManager()->createQueryBuilder();
+            $qb->select('s')
+                ->from('Tollwerk\Toggl\Domain\Model\Stats', 's')
+                ->where('s.user = :user')
+                ->andWhere('s.date >= '.$offsetDate->format('Y-m-d'))
+                ->setParameter('user', $user);
+//            echo $qb->getQuery()->getSQL();
+            return $qb->getQuery()->execute();
+        } catch (QueryException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    /**
+     * Return the stats of a user at a particular date (if any)
+     *
+     * @param User $user User
+     * @param \DateTimeInterface Date
+     * @return Stats|null User stats
+     */
+    public function getUserStatsByDate(User $user, \DateTimeInterface $date)
+    {
+        try {
+            $qb = App::getEntityManager()->createQueryBuilder();
+            $qb->select('s')
+                ->from('Tollwerk\Toggl\Domain\Model\Stats', 's')
+                ->where('s.user = :user')
+                ->andWhere('s.date = :date')
+                ->setParameter('user', $user)
+                ->setParameter('date', $date->format('Y-m-d'));
+//            echo $qb->getQuery()->getSQL();
+            $result = $qb->getQuery()->execute();
+            return count($result) ? current($result) : null;
         } catch (QueryException $e) {
             echo $e->getMessage();
         }
