@@ -426,4 +426,34 @@ class UserReport
         }
         return array();
     }
+
+    /**
+     * Return the user's holiday entitlement
+     *
+     * @return int Holiday entitlement
+     */
+    public function getPersonalHolidays()
+    {
+        return $this->personalHolidays;
+    }
+
+    /**
+     * Return the already planned holidays
+     *
+     * @return int Planned holidays
+     */
+    public function getPersonalHolidaysPlanned()
+    {
+        return $this->personalHolidaysPlanned;
+    }
+
+    /**
+     * Return the past holidays
+     *
+     * @return int Past holidays
+     */
+    public function getPersonalHolidaysPast()
+    {
+        return $this->personalHolidaysPast;
+    }
 }

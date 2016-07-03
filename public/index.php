@@ -106,27 +106,27 @@ $currentCalendarWeekStart = $currentCalendarWeekStart->modify('+'.($currentCalen
     foreach ($userReports as $userId => $userReport):
         $userChart = Html::json(Chart::weekly($userReport, $currentCalendarWeekStart));
         $userChart = preg_replace('/"%([^%]+)%"/', 'Tollwerk.Dashboard.$1', $userChart);
-//        $userOvertime = number_format($userReport['overtime_balance'], 2);
-//        $userOvertimeClass = ($userReport['overtime_balance'] >= 0) ? 'positive' : 'negative';
-//        $userRemainingHolidays = $userReport['holidays_per_year'] - count($userReport['personal_holidays']);
-//        $userRemainingHolidaysClass = ($userRemainingHolidays >= 0) ? 'positive' : 'negative';
+        $userOvertime = number_format($userReport->getUser()->getOvertime(), 2);
+        $userOvertimeClass = ($userReport->getUser()->getOvertime() >= 0) ? 'positive' : 'negative';
+        $userRemainingHolidays = $userReport->getPersonalHolidays() - $userReport->getPersonalHolidaysPlanned();
+        $userRemainingHolidaysClass = ($userRemainingHolidays >= 0) ? 'positive' : 'negative';
 
         ?>
         <figure class="time-chart">
             <figcaption><?= Html::h($userReport->getUser()->getName()); ?></figcaption>
             <div id="time-chart-<?= $userReport->getUser()->getToken(); ?>" style="width:300px;height:260px">
                 <script>Tollwerk.Dashboard.initUserTimeChart('time-chart-<?= $userReport->getUser()->getToken(); ?>', <?= $userChart; ?>);</script>
-            </div><?php /*
+            </div>
             <dl>
                 <dt><?= _('info.overtime'); ?></dt>
                 <dd class="<?= $userOvertimeClass; ?>"><?= Html::h($userOvertime); ?></dd>
                 <dt><?= sprintf(_('info.holiday'), $currentCalendarWeekStart->format('Y')); ?></dt>
-                <dd><?= $userReport['holidays_per_year']; ?></dd>
+                <dd><?= $userReport->getPersonalHolidays(); ?></dd>
                 <dt><?= sprintf(_('info.holiday.taken'), $currentCalendarWeekStart->format('Y')); ?></dt>
-                <dd><?= $userReport['holidays_taken']; ?></dd>
+                <dd><?= $userReport->getPersonalHolidaysPast(); ?></dd>
                 <dt><?= sprintf(_('info.holiday.remaining'), $currentCalendarWeekStart->format('Y')); ?></dt>
                 <dd class="<?= $userRemainingHolidaysClass; ?>"><?= $userRemainingHolidays; ?></dd>
-            </dl>*/?>
+            </dl>
         </figure><?php
 
     endforeach;
