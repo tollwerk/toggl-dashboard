@@ -36,6 +36,11 @@
 
 namespace Tollwerk\Toggl\Infrastructure\Processor;
 
+use Guzzle\Common\Exception\RuntimeException;
+use Tollwerk\Toggl\Domain\Model\Contract;
+use Tollwerk\Toggl\Domain\Model\User;
+use Tollwerk\Toggl\Domain\Report\DayReport;
+use Tollwerk\Toggl\Domain\Report\UserReport;
 use Tollwerk\Toggl\Ports\App;
 
 /**
@@ -105,15 +110,260 @@ class Chart
     /**
      * Create the user time chart data
      *
-     * @param array $data User statistics data
+     * @param UserReport $userReport User statistics data
      * @param \DateTimeInterface $datetime Timestamp
      * @return array User time chart data
      * @see http://api.highcharts.com/highcharts
      * @see http://www.highcharts.com/demo/column-placement
      */
-    public static function createUserWeekChart(array $data, \DateTime $datetime = null)
+    public static function weekly(UserReport $userReport, \DateTime $datetime = null)
     {
-        trigger_error($data['user']);
+        if ($datetime == null) {
+            $datetime = new \DateTime('now');
+        }
+
+        // Determine the week start
+        $today = new \DateTime('now');
+        $weekDay = ($datetime->format('N') + 7 - intval(App::getConfig('common.start_weekday'))) % 7;
+        $currentDay = clone $datetime;
+        $currentDay = $currentDay->setTime(0, 0, 0)->modify('-'.$weekDay.' days');
+        $currentYearDay = $currentDay->format('z');
+
+        /** @var DayReport[] $dayReports */
+        $dayReports = $userReport->getRange($currentYearDay, $currentYearDay + 7);
+        if (!count($dayReports)) {
+            throw new \RuntimeException('Invalid date range');
+        }
+
+        // Determine the working hours per day
+        $userWorkingHoursPerDay = null;
+        $userMinBillableHoursPerDay = 0;
+        foreach ($dayReports as $dayReport) {
+            if (($userWorkingHoursPerDay === null) && ($dayReport->getContract() instanceof Contract)) {
+                $userWorkingHoursPerDay = $dayReport->getContract()->getWorkingHoursPerDay();
+            }
+            if (!$userMinBillableHoursPerDay && ($dayReport->getContract() instanceof Contract)) {
+                $userMinBillableHoursPerDay = $dayReport->getBillableTarget();
+            }
+        }
+        if ($userWorkingHoursPerDay === null) {
+            throw new \RuntimeException('No contracts');
+        }
+        $minYAxisRange = $userWorkingHoursPerDay;
+
+        // Colors
+        $weekendBackgroundColor = '#eeeeee';
+
+        // Calculate day data
+        $series = ['total' => [], 'billable' => []];
+        $weekAverage = ['total' => [], 'billable' => [], 'billable_status' => []];
+        $plotBands = [
+            self::plotBand(4.5, 5.5, $weekendBackgroundColor),
+            self::plotBand(5.5, 6.5, $weekendBackgroundColor),
+        ];
+
+        // Run through all week reports
+        foreach ($dayReports as $index => $dayReport) {
+            $dayTotal = $dayReport->getTimeActual() ? self::round($dayReport->getTimeActual() / 3600) : null;
+            $dayBillable = $dayReport->getBillableActual() ? self::round($dayReport->getBillableActual() / 3600) : null;
+
+            // If this is a business holiday
+            if ($businessHoliday = $dayReport->getBusinessHoliday()) {
+                $plotBands[] = self::plotBand(
+                    $index - .5, $index + .5, self::COLOR_HOLIDAY_BUSINESS_BG, self::COLOR_HOLIDAY,
+                    $businessHoliday
+                );
+
+            // If this is a personal holiday
+            } elseif ($dayReport->getPersonalHoliday()) {
+                $plotBands[] = self::plotBand(
+                    $index - .5, $index + .5, self::COLOR_HOLIDAY_PERSONAL_BG, self::COLOR_HOLIDAY,
+                    _('holiday.personal')
+                );
+
+                // Else if the day should be used for the week average
+            } elseif (($dayReport->getYearDay() <= $today->format('z')) && $dayReport->isWorkingDay()) {
+                $weekAverage['total'][] = $dayTotal;
+                $weekAverage['billable'][] = $dayBillable;
+                $weekAverage['billable_status'][] = $dayReport->getBillableStatus();
+            }
+
+            $series['total'][] = [
+                'y' => $dayTotal,
+                'color' => $dayReport->isWorkingDay() ? self::interpolateHex(
+                    self::lighten(self::COLOR_DATA_MIN, .3),
+                    self::lighten(self::COLOR_DATA_MAX, .3),
+                    $dayReport->getTimeStatus()
+                ) : self::rgbToHex(self::lighten(self::hexToRgb(self::COLOR_HOLIDAY), .5)),
+            ];
+            $series['billable'][] = [
+                'y' => $dayBillable,
+                'total' => $dayTotal,
+                'color' => $dayReport->isWorkingDay() ? self::interpolateHex(
+                    self::COLOR_DATA_MIN,
+                    self::COLOR_DATA_MAX,
+                    $dayReport->getRevenueStatus()
+                ) : self::COLOR_HOLIDAY,
+            ];
+        }
+
+        // Add the week averages
+        if (count($weekAverage['total'])) {
+            $totalAverage = self::round(array_sum($weekAverage['total']) / count($weekAverage['total']));
+            $series['total'][] = [
+                'y' => $totalAverage,
+                'color' => self::rgbToHex(self::lighten(self::COLOR_AVERAGE, .3)),
+            ];
+
+            $billableAverage = self::round(array_sum($weekAverage['billable']) / count($weekAverage['billable']));
+            $series['billable'][] = [
+                'y' => $billableAverage,
+                'total' => $totalAverage,
+                'color' => self::rgbToHex(self::COLOR_AVERAGE),
+            ];
+        }
+
+        // Calculate the monthly average
+        $monthAverage = ['total' => [], 'billable' => [], 'billable_status' => []];
+        $monthStart = clone $datetime;
+        $monthStart = $monthStart->setDate($datetime->format('Y'), $datetime->format('n'), 1)->setTime(0, 0, 0);
+        /** @var DayReport[] $monthlyDayReports */
+        $monthlyDayReports = $userReport->getRange($monthStart->format('z'), $monthStart->format('z') + $monthStart->format('t'));
+        if (!count($monthlyDayReports)) {
+            throw new \RuntimeException('Invalid date range');
+        }
+        foreach ($monthlyDayReports as $dayReport) {
+            // If the day should be used for the month average
+            if (($dayReport->getYearDay() <= $today->format('z')) && $dayReport->isWorkingDay() && !$dayReport->isHoliday()) {
+                $dayTotal = $dayReport->getTimeActual() ? self::round($dayReport->getTimeActual() / 3600) : null;
+                $dayBillable = $dayReport->getBillableActual() ? self::round($dayReport->getBillableActual() / 3600) : null;
+                $monthAverage['total'][] = $dayTotal;
+                $monthAverage['billable'][] = $dayBillable;
+                $monthAverage['billable_status'][] = $dayReport->getBillableStatus();
+            }
+        }
+        // Add the month averages
+        if (count($monthAverage['total'])) {
+            $totalAverage = self::round(array_sum($monthAverage['total']) / count($monthAverage['total']));
+            $series['total'][] = [
+                'y' => $totalAverage,
+                'color' => self::rgbToHex(self::lighten(self::COLOR_AVERAGE, .3)),
+            ];
+
+            $billableAverage = self::round(array_sum($monthAverage['billable']) / count($monthAverage['billable']));
+            $series['billable'][] = [
+                'y' => $billableAverage,
+                'total' => $totalAverage,
+                'color' => self::rgbToHex(self::COLOR_AVERAGE),
+            ];
+        }
+
+        // Construct the chart data
+        $chart = [
+            'chart' => ['type' => 'bar'],
+            'title' => ['text' => null],
+            'xAxis' => [
+                'categories' => [
+                    _('weekday.1.abbr'),
+                    _('weekday.2.abbr'),
+                    _('weekday.3.abbr'),
+                    _('weekday.4.abbr'),
+                    _('weekday.5.abbr'),
+                    _('weekday.6.abbr'),
+                    _('weekday.0.abbr'),
+                    _('week.abbr'),
+                    _('month.abbr'),
+                ],
+                'plotBands' => $plotBands
+            ],
+            'yAxis' => [
+                'min' => 0,
+                'minRange' => $minYAxisRange,
+                'plotLines' => [
+                    [ // Working hours threshold
+                        'color' => self::COLOR_LINE_WORKING,
+                        'width' => 1,
+                        'value' => $userWorkingHoursPerDay,
+                        'zIndex' => 100
+                    ],
+                    [ // Break even threshold
+                        'color' => self::COLOR_LINE_BILLABLE,
+                        'width' => 1,
+                        'value' => $userMinBillableHoursPerDay,
+                        'zIndex' => 100
+                    ]
+                ],
+                'title' => [
+                    'text' => '',
+                ]
+            ],
+            'plotOptions' => [
+                'bar' => [
+                    'groupPadding' => 0,
+                    'pointPadding' => 0,
+                    'grouping' => false,
+
+                ],
+            ],
+            'series' => [
+                [
+                    'name' => _('chart.total'),
+                    'data' => $series['total'],
+                    'dataLabels' => [
+                        'enabled' => true,
+                        'format' => sprintf(_('unit.hours'), '{y}'),
+                        'style' => [
+                            'color' => 'contrast',
+                            'fontWeight' => 'normal',
+                            'textShadow' => 'none',
+                        ]
+                    ],
+                    'tooltip' => [
+                        'pointFormat' => '<span style="color:{point.color}">●</span> {series.name}: <b>{point.y}h</b><br/>'
+                    ]
+                ],
+                [
+                    'name' => _('chart.billable'),
+                    'data' => $series['billable'],
+                    'dataLabels' => [
+                        'enabled' => true,
+                        'align' => 'right',
+                        'inside' => true,
+                        'formatter' => '%performance%',
+                        'style' => [
+                            'color' => 'contrast',
+                            'fontWeight' => 'normal',
+                            'textShadow' => 'none', // 0 0 6px contrast, 0 0 3px contrast
+                        ]
+                    ],
+                    'tooltip' => [
+                        'pointFormat' => '<span style="color:{point.color}">●</span> {series.name}: <b>{point.y}h</b><br/>'
+                    ]
+                ],
+            ],
+            'credits' => [
+                'enabled' => false
+            ],
+            'legend' => [
+                'enabled' => false
+            ]
+        ];
+        return $chart;
+    }
+
+    /**
+     * Create the user time chart data
+     *
+     * @param array $userReport User statistics data
+     * @param \DateTimeInterface $datetime Timestamp
+     * @return array User time chart data
+     * @see http://api.highcharts.com/highcharts
+     * @see http://www.highcharts.com/demo/column-placement
+     * @deprecated
+     */
+    public static function createUserWeekChart(array $userReport, \DateTime $datetime = null)
+    {
+        trigger_error($userReport['user']);
         if ($datetime == null) {
             $datetime = new \DateTime('now');
         }
@@ -125,12 +375,12 @@ class Chart
         $currentDay = $currentDay->setTime(0, 0, 0)->modify('-'.$weekDay.' days');
         $month = $currentDay->format('n');
 
-        $userWorkingHoursPerDay = $data['working_hours_per_day'];
+        $userWorkingHoursPerDay = $userReport['working_hours_per_day'];
         $minYAxisRange = $userWorkingHoursPerDay;
 
         // The minimum billable hours per day
         $userMinBillableHoursPerDay =
-            $data['by_day']['costs_total'][$currentDay->format('n')][$currentDay->format('j')] / $data['rate'];
+            $userReport['by_day']['costs_total'][$currentDay->format('n')][$currentDay->format('j')] / $userReport['rate'];
 
         // Colors
         $weekendBackgroundColor = '#eeeeee';
@@ -152,16 +402,16 @@ class Chart
             $day = $monthDay->format('j');
             $weekDay = $monthDay->format('w');
 
-            if (!array_key_exists($yearDay, $data['business_holidays'])
-                && !array_key_exists($yearDay, $data['personal_holidays'])
+            if (!array_key_exists($yearDay, $userReport['business_holidays'])
+                && !array_key_exists($yearDay, $userReport['personal_holidays'])
                 && ($weekDay > 0)
                 && ($weekDay < 6)
             ) {
-                $dayTotal = floatval(self::round($data['by_day']['time'][$month][$day] / 3600));
-                $dayBillable = floatval(self::round($data['by_day']['billable'][$month][$day] / 3600));
+                $dayTotal = floatval(self::round($userReport['by_day']['time'][$month][$day] / 3600));
+                $dayBillable = floatval(self::round($userReport['by_day']['billable'][$month][$day] / 3600));
                 $monthAverage['total'][] = $dayTotal;
                 $monthAverage['billable'][] = $dayBillable;
-                $monthAverage['billable_status'][] = $data['by_day']['costs_status'][$month][$day];
+                $monthAverage['billable_status'][] = $userReport['by_day']['costs_status'][$month][$day];
             }
         }
 
@@ -170,22 +420,22 @@ class Chart
             $yearDay = $currentDay->format('z');
             $month = $currentDay->format('n');
             $day = $currentDay->format('j');
-            $dayTotal = empty($data['by_day']['time'][$month][$day]) ?
-                null : self::round($data['by_day']['time'][$month][$day] / 3600);
-            $dayBillable = empty($data['by_day']['billable'][$month][$day]) ?
-                null : self::round($data['by_day']['billable'][$month][$day] / 3600);
-            $isWorkingDay = array_key_exists($currentDay->format('w'), $data['working_days']);
+            $dayTotal = empty($userReport['by_day']['time'][$month][$day]) ?
+                null : self::round($userReport['by_day']['time'][$month][$day] / 3600);
+            $dayBillable = empty($userReport['by_day']['billable'][$month][$day]) ?
+                null : self::round($userReport['by_day']['billable'][$month][$day] / 3600);
+            $isWorkingDay = array_key_exists($currentDay->format('w'), $userReport['working_days']);
 
             // If this is a business holiday
-            if (array_key_exists($yearDay, $data['business_holidays'])) {
+            if (array_key_exists($yearDay, $userReport['business_holidays'])) {
                 $isWorkingDay = false;
                 $plotBands[] = self::plotBand(
                     $index - .5, $index + .5, self::COLOR_HOLIDAY_BUSINESS_BG, self::COLOR_HOLIDAY,
-                    $data['business_holidays'][$yearDay]
+                    $userReport['business_holidays'][$yearDay]
                 );
 
                 // If this is a personal holiday
-            } elseif (array_key_exists($yearDay, $data['personal_holidays'])) {
+            } elseif (array_key_exists($yearDay, $userReport['personal_holidays'])) {
                 $isWorkingDay = false;
                 $plotBands[] = self::plotBand(
                     $index - .5, $index + .5, self::COLOR_HOLIDAY_PERSONAL_BG, self::COLOR_HOLIDAY,
@@ -197,8 +447,8 @@ class Chart
                 $monthAverage['total'][] = $weekAverage['total'][] = $dayTotal;
                 $monthAverage['billable'][] = $weekAverage['billable'][] = $dayBillable;
                 $monthAverage['billable_status'][] = $weekAverage['billable_status'][] =
-                    empty($data['by_day']['costs_status'][$month][$day]) ?
-                        0 : $data['by_day']['costs_status'][$month][$day];
+                    empty($userReport['by_day']['costs_status'][$month][$day]) ?
+                        0 : $userReport['by_day']['costs_status'][$month][$day];
             }
 
             $series['total'][] = [
@@ -206,8 +456,8 @@ class Chart
                 'color' => $isWorkingDay ? self::interpolateHex(
                     self::lighten(self::COLOR_DATA_MIN, .3),
                     self::lighten(self::COLOR_DATA_MAX, .3),
-                    empty($data['by_day']['time_status'][$month][$day]) ?
-                        0 : $data['by_day']['time_status'][$month][$day]
+                    empty($userReport['by_day']['time_status'][$month][$day]) ?
+                        0 : $userReport['by_day']['time_status'][$month][$day]
                 ) : self::rgbToHex(self::lighten(self::hexToRgb(self::COLOR_HOLIDAY), .5)),
             ];
             $series['billable'][] = [
@@ -216,8 +466,8 @@ class Chart
                 'color' => $isWorkingDay ? self::interpolateHex(
                     self::COLOR_DATA_MIN,
                     self::COLOR_DATA_MAX,
-                    empty($data['by_day']['costs_status'][$month][$day]) ?
-                        0 : $data['by_day']['costs_status'][$month][$day]
+                    empty($userReport['by_day']['costs_status'][$month][$day]) ?
+                        0 : $userReport['by_day']['costs_status'][$month][$day]
                 ) : self::COLOR_HOLIDAY,
             ];
         }
@@ -229,16 +479,16 @@ class Chart
             $day = $currentDay->format('j');
             $weekDay = $currentDay->format('w');
 
-            if (!array_key_exists($yearDay, $data['business_holidays'])
-                && !array_key_exists($yearDay, $data['personal_holidays'])
+            if (!array_key_exists($yearDay, $userReport['business_holidays'])
+                && !array_key_exists($yearDay, $userReport['personal_holidays'])
                 && ($weekDay > 0)
                 && ($weekDay < 6)
             ) {
-                $dayTotal = floatval(self::round($data['by_day']['time'][$month][$day] / 3600));
-                $dayBillable = floatval(self::round($data['by_day']['billable'][$month][$day] / 3600));
+                $dayTotal = floatval(self::round($userReport['by_day']['time'][$month][$day] / 3600));
+                $dayBillable = floatval(self::round($userReport['by_day']['billable'][$month][$day] / 3600));
                 $monthAverage['total'][] = $dayTotal;
                 $monthAverage['billable'][] = $dayBillable;
-                $monthAverage['billable_status'][] = $data['by_day']['costs_status'][$month][$day];
+                $monthAverage['billable_status'][] = $userReport['by_day']['costs_status'][$month][$day];
             }
         }
 
@@ -247,7 +497,7 @@ class Chart
         // Add the week averages
         if (count($weekAverage['total'])) {
             $totalAverage = self::round(array_sum($weekAverage['total']) / count($weekAverage['total']));
-            $totalStatus = $totalAverage / $data['working_hours_per_day'];
+            $totalStatus = $totalAverage / $userReport['working_hours_per_day'];
             $series['total'][] = [
                 'y' => $totalAverage,
                 'color' => self::rgbToHex(self::lighten(self::COLOR_AVERAGE, .3)),
@@ -265,7 +515,7 @@ class Chart
         // Add the month averages
         if (count($monthAverage['total'])) {
             $totalAverage = self::round(array_sum($monthAverage['total']) / count($monthAverage['total']));
-            $totalStatus = $totalAverage / $data['working_hours_per_day'];
+            $totalStatus = $totalAverage / $userReport['working_hours_per_day'];
             $series['total'][] = [
                 'y' => $totalAverage,
                 'color' => self::rgbToHex(self::lighten(self::COLOR_AVERAGE, .3)),
@@ -458,7 +708,8 @@ class Chart
      * @param string $hex Hex color
      * @return array RGB color
      */
-    protected static function hexToRgb($hex) {
+    protected static function hexToRgb($hex)
+    {
         return sscanf($hex, "#%02x%02x%02x");
     }
 

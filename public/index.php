@@ -35,29 +35,11 @@
 
 namespace Tollwerk\Dashboard;
 
-use AJT\Toggl\TogglClient;use Tollwerk\Toggl\Application\Service\StatisticsService;use Tollwerk\Toggl\Domain\Model\User;use Tollwerk\Toggl\Infrastructure\Processor\Chart;use Tollwerk\Toggl\Infrastructure\Renderer\Html;
+use AJT\Toggl\TogglClient;use Tollwerk\Toggl\Application\Service\StatisticsService;use Tollwerk\Toggl\Domain\Model\User;use Tollwerk\Toggl\Domain\Report\UserReport;use Tollwerk\Toggl\Infrastructure\Processor\Chart;use Tollwerk\Toggl\Infrastructure\Renderer\Html;
 
 //header('Content-Type: text/plain');
 //header('Content-Type: application/json');
 require_once dirname(__DIR__).DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR.'bootstrap.php';
-
-
-//use AJT\Toggl\ReportsClient;
-//use Symfony\Component\Yaml\Yaml;
-//
-//$yamlConfigStr = file_get_contents(dirname(__DIR__).DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'config.yml');
-//$yamlConfig = Yaml::parse($yamlConfigStr);
-
-/** @var TogglClient $togglClient */
-//$reportsClient = ReportsClient::factory(array('api_key' => 'e1d49a86954369425dd936a4b39aac87', 'debug' => false));
-//
-//print_r($reportsClient->summary([
-//    'user_agent' => 'Tollwerk Toggl Dashboard',
-//    'workspace_id' => $yamlConfig['workspaces'][0]
-//]));
-
-//$togglClient = TogglClient::factory(array('api_key' => 'e1d49a86954369425dd936a4b39aac87', 'debug' => false));
-//print_r($togglClient->getWorkspaceUsers(array('id' => 986852)));
 
 $entityManager = \Tollwerk\Toggl\Ports\App::getEntityManager();
 $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
@@ -66,16 +48,17 @@ $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Use
 //$users = [5 => $userRepository->find(5)];
 $users = [];
 /** @var User $user */
-foreach ($userRepository->findAll() as $user) {
+foreach ($userRepository->findBy(['active' => true]) as $user) {
     $users[$user->getId()] = $user;
 }
-$userStatistics = [];
+$userReports = [];
 
 // Run through all users
 /** @var User $user */
 foreach ($users as $user) {
     try {
-        $userStatistics[$user->getId()] = StatisticsService::getUserStatistics($user);
+//        header('content-type: text/plain');
+        $userReports[$user->getId()] = UserReport::byYear($user);
     } catch (\InvalidArgumentException $e) {
         continue;
     }
@@ -116,30 +99,34 @@ $currentCalendarWeekStart = $currentCalendarWeekStart->modify('+'.($currentCalen
 <div class="time-charts"><?php
 
     // Run through all user statistics
-    foreach ($userStatistics as $userId => $userStats):
-        $userChart = Html::json(Chart::createUserWeekChart($userStats, $currentCalendarWeekStart));
+    /**
+     * @var int $userId
+     * @var UserReport $userReport
+     */
+    foreach ($userReports as $userId => $userReport):
+        $userChart = Html::json(Chart::weekly($userReport, $currentCalendarWeekStart));
         $userChart = preg_replace('/"%([^%]+)%"/', 'Tollwerk.Dashboard.$1', $userChart);
-        $userOvertime = number_format($userStats['overtime_balance'], 2);
-        $userOvertimeClass = ($userStats['overtime_balance'] >= 0) ? 'positive' : 'negative';
-        $userRemainingHolidays = $userStats['holidays_per_year'] - count($userStats['personal_holidays']);
-        $userRemainingHolidaysClass = ($userRemainingHolidays >= 0) ? 'positive' : 'negative';
+//        $userOvertime = number_format($userReport['overtime_balance'], 2);
+//        $userOvertimeClass = ($userReport['overtime_balance'] >= 0) ? 'positive' : 'negative';
+//        $userRemainingHolidays = $userReport['holidays_per_year'] - count($userReport['personal_holidays']);
+//        $userRemainingHolidaysClass = ($userRemainingHolidays >= 0) ? 'positive' : 'negative';
 
         ?>
         <figure class="time-chart">
-            <figcaption><?= Html::h($userStats['user']); ?></figcaption>
-            <div id="time-chart-<?= $users[$userStats['user_id']]->getToken(); ?>" style="width:300px;height:260px">
-                <script>Tollwerk.Dashboard.initUserTimeChart('time-chart-<?= $users[$userStats['user_id']]->getToken(); ?>', <?= $userChart; ?>);</script>
-            </div>
+            <figcaption><?= Html::h($userReport->getUser()->getName()); ?></figcaption>
+            <div id="time-chart-<?= $userReport->getUser()->getToken(); ?>" style="width:300px;height:260px">
+                <script>Tollwerk.Dashboard.initUserTimeChart('time-chart-<?= $userReport->getUser()->getToken(); ?>', <?= $userChart; ?>);</script>
+            </div><?php /*
             <dl>
                 <dt><?= _('info.overtime'); ?></dt>
                 <dd class="<?= $userOvertimeClass; ?>"><?= Html::h($userOvertime); ?></dd>
                 <dt><?= sprintf(_('info.holiday'), $currentCalendarWeekStart->format('Y')); ?></dt>
-                <dd><?= $userStats['holidays_per_year']; ?></dd>
+                <dd><?= $userReport['holidays_per_year']; ?></dd>
                 <dt><?= sprintf(_('info.holiday.taken'), $currentCalendarWeekStart->format('Y')); ?></dt>
-                <dd><?= $userStats['holidays_taken']; ?></dd>
+                <dd><?= $userReport['holidays_taken']; ?></dd>
                 <dt><?= sprintf(_('info.holiday.remaining'), $currentCalendarWeekStart->format('Y')); ?></dt>
                 <dd class="<?= $userRemainingHolidaysClass; ?>"><?= $userRemainingHolidays; ?></dd>
-            </dl>
+            </dl>*/?>
         </figure><?php
 
     endforeach;

@@ -174,7 +174,7 @@ class Contract
         $workingDaysList = [];
         for ($workingDay = 0; $workingDay < 7; ++$workingDay) {
             if ($workingDays & 1) {
-                $workingDaysList[] = $workingDay;
+                $workingDaysList[$workingDay] = $workingDay;
             }
             $workingDays >>= 1;
         }

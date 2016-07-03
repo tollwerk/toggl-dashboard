@@ -57,14 +57,34 @@ class DayRepository extends EntityRepository
      * @param int $year Year
      * @return array Business holidays
      */
-    public function getBusinessHolidays($year)
+    public function getBusinessHolidaysByYear($year)
+    {
+        $timezone = new \DateTimeZone(App::getConfig('common.timezone'));
+        return $this->getBusinessHolidays(
+            new \DateTimeImmutable($year.'-01-01', $timezone),
+            new \DateTimeImmutable($year.'-12-31', $timezone)
+        );
+    }
+
+    /**
+     * Return all business holidays in a particular time range
+     *
+     * @param \DateTimeImmutable $from Start date
+     * @param \DateTimeImmutable $to End date
+     * @return array Business holidays
+     */
+    public function getBusinessHolidays(\DateTimeImmutable $from, \DateTimeImmutable $to)
     {
         try {
             $qb = App::getEntityManager()->createQueryBuilder();
             $qb->select('d')
                 ->from('Tollwerk\Toggl\Domain\Model\Day', 'd')
                 ->where('d.type = '.Day::BUSINESS_HOLIDAY)
-                ->andWhere('YEAR(d.date) = '.intval($year));
+                ->andWhere('d.date >= :from')
+                ->andWhere('d.date <= :to')
+                ->setParameter('from', $from->format('Y-m-d'))
+                ->setParameter('to', $to->format('Y-m-d'))
+                ->orderBy('d.date', 'ASC');
 //            echo $qb->getQuery()->getSQL();
             return $qb->getQuery()->execute();
         } catch (QueryException $e) {
@@ -79,7 +99,25 @@ class DayRepository extends EntityRepository
      * @param int $year Year
      * @return array Business holidays
      */
-    public function getPersonalHolidays(User $user, $year)
+    public function getPersonalHolidaysByYear(User $user, $year)
+    {
+        $timezone = new \DateTimeZone(App::getConfig('common.timezone'));
+        return $this->getPersonalHolidays(
+            $user,
+            new \DateTimeImmutable($year.'-01-01', $timezone),
+            new \DateTimeImmutable($year.'-12-31', $timezone)
+        );
+    }
+
+    /**
+     * Return all personal holidays of a particular user for a given period
+     *
+     * @param User $user User
+     * @param \DateTimeImmutable $from Start date
+     * @param \DateTimeImmutable $to End date
+     * @return array Business holidays
+     */
+    public function getPersonalHolidays(User $user, \DateTimeImmutable $from, \DateTimeImmutable $to)
     {
         try {
             $qb = App::getEntityManager()->createQueryBuilder();
@@ -87,8 +125,12 @@ class DayRepository extends EntityRepository
                 ->from('Tollwerk\Toggl\Domain\Model\Day', 'd')
                 ->where('d.type = '.Day::PERSONAL_HOLIDAY)
                 ->andWhere('d.user = :user')
-                ->andWhere('YEAR(d.date) = '.intval($year))
-                ->setParameter('user', $user);
+                ->andWhere('d.date >= :from')
+                ->andWhere('d.date <= :to')
+                ->setParameter('user', $user)
+                ->setParameter('from', $from->format('Y-m-d'))
+                ->setParameter('to', $to->format('Y-m-d'))
+                ->orderBy('d.date', 'ASC');
 //            echo $qb->getQuery()->getSQL();
             return $qb->getQuery()->execute();
         } catch (QueryException $e) {
@@ -103,7 +145,8 @@ class DayRepository extends EntityRepository
      * @param \DateTimeInterface $date Date
      * @return bool Date is a holiday
      */
-    public function isUserHoliday(User $user, \DateTimeInterface $date) {
+    public function isUserHoliday(User $user, \DateTimeInterface $date)
+    {
         try {
             $qb = App::getEntityManager()->createQueryBuilder();
             $qb->select($qb->expr()->count('d.id'))

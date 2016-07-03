@@ -60,6 +60,13 @@ class User
      */
     protected $id;
     /**
+     * Active
+     *
+     * @var boolean
+     * @Column(type="boolean")
+     */
+    protected $active;
+    /**
      * Toggl ID
      *
      * @var integer
@@ -337,5 +344,15 @@ class User
         /** @var StatsRepository $statsRepository */
         $statsRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Stats');
         return $statsRepository->getUserStatsByDate($this, $date);
+    }
+
+    /**
+     * Return whether the user is ative
+     *
+     * @return boolean Active user
+     */
+    public function isActive()
+    {
+        return $this->active;
     }
 }

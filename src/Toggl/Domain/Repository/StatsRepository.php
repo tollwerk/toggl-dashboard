@@ -57,16 +57,40 @@ class StatsRepository extends EntityRepository
      * @param User $user User
      * @param int $year Year
      * @return array User stats
+     * @deprecated 
      */
     public function getUserStatsByYear(User $user, $year)
+    {
+        $timezone = new \DateTimeZone(App::getConfig('common.timezone'));
+        return $this->getUserStats(
+            $user,
+            new \DateTimeImmutable($year.'-01-01', $timezone),
+            new \DateTimeImmutable($year.'-12-31', $timezone)
+        );
+    }
+
+    /**
+     * Return all stats of a particular user for a given period
+     *
+     * @param User $user User
+     * @param \DateTimeInterface $from Start date
+     * @param \DateTimeInterface $to End date
+     * @return array User stats
+     */
+    public function getUserStats(User $user, \DateTimeInterface $from, \DateTimeInterface $to)
     {
         try {
             $qb = App::getEntityManager()->createQueryBuilder();
             $qb->select('s')
                 ->from('Tollwerk\Toggl\Domain\Model\Stats', 's')
                 ->where('s.user = :user')
-                ->andWhere('YEAR(s.date) = '.intval($year))
-                ->setParameter('user', $user);
+                ->andWhere('s.date >= :from')
+                ->andWhere('s.date <= :to')
+                ->setParameter('user', $user)
+                ->setParameter('from', $from->format('Y-m-d'))
+                ->setParameter('to', $to->format('Y-m-d'))
+                ->setParameter('user', $user)
+                ->orderBy('s.date', 'ASC');
 //            echo $qb->getQuery()->getSQL();
             return $qb->getQuery()->execute();
         } catch (QueryException $e) {

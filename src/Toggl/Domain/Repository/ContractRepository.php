@@ -56,6 +56,7 @@ class ContractRepository extends EntityRepository
      * @param \DateTimeInterface|null $from Period start
      * @param \DateTimeInterface|null $to Period start
      * @return array Contracts ordered by timestamp
+     * @deprecated
      */
     public function getUserContractsByPeriod(User $user, \DateTimeInterface $from = null, \DateTimeInterface $to = null)
     {
@@ -106,6 +107,47 @@ class ContractRepository extends EntityRepository
             }
 
             return $contracts;
+        } catch (QueryException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    /**
+     * Return the list of effective contracts of a particular user for a given period
+     *
+     * @param User $user User
+     * @param \DateTimeInterface $from Start date
+     * @param \DateTimeInterface $to End date
+     * @return array Contracts ordered by timestamp
+     */
+    public function getUserContracts(User $user, \DateTimeInterface $from, \DateTimeInterface $to)
+    {
+        try {
+            $fromTimestamp = $toTimestamp = 0;
+
+            $qb = App::getEntityManager()->createQueryBuilder();
+            $qb->select('c')
+                ->from('Tollwerk\Toggl\Domain\Model\Contract', 'c')
+                ->where('c.user = :user')
+                ->setParameter('user', $user);
+
+            // Set a lower boundary
+            $fromContract = $this->getEffectiveUserContractForDate($user, $from);
+            if ($fromContract instanceof Contract) {
+                $qb->andWhere('c.date >= :from')
+                    ->setParameter('from', $fromContract->getDate()->format('Y-m-d'));
+            }
+
+            // Set an upper boundary
+            $toContract = $this->getEffectiveUserContractForDate($user, $to);
+            if ($toContract instanceof Contract) {
+                $qb->andWhere('c.date >= :to')
+                    ->setParameter('to', $toContract->getDate()->format('Y-m-d'));
+            }
+
+            $qb->orderBy('c.date', 'ASC');
+//            echo $qb->getQuery()->getSQL();
+            return $qb->getQuery()->execute();
         } catch (QueryException $e) {
             echo $e->getMessage();
         }
