@@ -77,7 +77,7 @@ class ContractRepository extends EntityRepository
             // Set an upper boundary
             $toContract = $this->getEffectiveUserContractForDate($user, $to);
             if ($toContract instanceof Contract) {
-                $qb->andWhere('c.date >= :to')
+                $qb->andWhere('c.date <= :to')
                     ->setParameter('to', $toContract->getDate()->format('Y-m-d'));
             }
 

@@ -216,11 +216,14 @@ class UserReport
                 $contract = $monthDay->getContract();
                 if ($contract instanceof Contract) {
                     $contractId = $contract->getId();
+                    if (!array_key_exists($contractId, $this->workingDaysPerMonthAndContract[$month])) {
+                        print_r($this->workingDaysPerMonthAndContract);
+                        die('contract');
+                    }
                     $contractMonthWorkingDays = $this->workingDaysPerMonthAndContract[$month][$contractId];
                     $contractWorkingDayShare = $contractMonthWorkingDays /
                         array_sum($this->workingDaysPerMonthAndContract[$month]);
                     $monthDay->applyContract(
-                        $this->yearlyContractSharesByMonth[$contractId][$month],
                         $contractWorkingDayShare,
                         $contractMonthWorkingDays
                     );
@@ -275,7 +278,7 @@ class UserReport
         /** @var Contract[] $contracts */
         $contracts = $this->contractRepository->getUserContracts($this->user, $this->from, $this->to);
         /** @var Contract $contract */
-        $contract = array_shift($contracts);
+        $contract = array_pop($contracts);
         $this->contracts[$contract->getId()] = $contract;
         $this->yearlyContractSharesByMonth[$contract->getId()] = array_fill_keys(array_keys($this->months), 0);
 
@@ -286,7 +289,7 @@ class UserReport
                 if (!count($contracts)) {
                     break;
                 }
-                $contract = array_shift($contracts);
+                $contract = array_pop($contracts);
                 $this->contracts[$contract->getId()] = $contract;
                 $this->yearlyContractSharesByMonth[$contract->getId()] = array_fill_keys(array_keys($this->months), 0);
             }
