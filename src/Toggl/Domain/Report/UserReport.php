@@ -36,7 +36,6 @@
 
 namespace Tollwerk\Toggl\Domain\Report;
 
-
 use Tollwerk\Toggl\Domain\Model\Contract;
 use Tollwerk\Toggl\Domain\Model\Day;
 use Tollwerk\Toggl\Domain\Model\Stats;
@@ -419,7 +418,8 @@ class UserReport
      * @param int $yearDayEnd End day of the year
      * @return array User day reports for the given range
      */
-    public function getRange($yearDayStart, $yearDayEnd) {
+    public function getRange($yearDayStart, $yearDayEnd)
+    {
         $dayIndices = array_flip(array_keys($this->days));
         if (array_key_exists($yearDayStart, $dayIndices) && ($yearDayEnd > $yearDayStart)) {
             return array_slice($this->days, $dayIndices[$yearDayStart], $yearDayEnd - $yearDayStart);

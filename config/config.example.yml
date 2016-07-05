@@ -5,18 +5,6 @@ doctrine:
     password: "password"
     dbname: "database"
     host: "localhost"
-user:
-  john:
-    holidays_per_year: 28
-    personnel_costs: 2500
-  jane:
-    aliases: [nick]
-    working_days: [1, 2, 3, 4]
-    working_hours_per_day: 6
-    holidays_per_year: 24
-    costs: 2400
-  system:
-    costs: 5000
 common:
   timezone: "Europe/Berlin"
   working_days: [1, 2, 3, 4, 5]

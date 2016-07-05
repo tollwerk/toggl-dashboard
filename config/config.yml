@@ -5,31 +5,6 @@ doctrine:
     password: "6:I&4LdF"
     dbname: "toggl_01"
     host: "localhost"
-user:
-  joschi:
-    holidays_per_year: 28
-    costs: 2855
-  isabel:
-    aliases: [isi]
-    working_days: [2, 3, 4, 5]
-    holidays_per_year: 25
-    costs: 1007
-  nina:
-    working_hours_per_day: 6.5
-    holidays_per_year: 21
-    costs: 1462
-  klaus:
-    holidays_per_year: 26
-    costs: 3283
-  bertram:
-    working_days: [1, 2, 3]
-    holidays_per_year: 16
-    costs: 1666
-  jule:
-    holidays_per_year: 26
-    costs: 3022
-  system:
-    costs: 5000
 common:
   timezone: "Europe/Berlin"
   working_days: [1, 2, 3, 4, 5]

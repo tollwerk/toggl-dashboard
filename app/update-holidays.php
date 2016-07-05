@@ -45,10 +45,10 @@ require_once __DIR__.DIRECTORY_SEPARATOR.'bootstrap.php';
 /**
  * Normalize a date to 00:00:00
  *
- * @param DateTimeInterface $date Date
- * @return DateTimeImmutable Normalized date
+ * @param \DateTimeImmutable $date Date
+ * @return \DateTimeImmutable Normalized date
  */
-function normalizeDate(\DateTimeInterface $date)
+function normalizeDate(\DateTimeImmutable $date)
 {
     $normalized = clone $date;
     return $normalized->setTime(0, 0, 0);
@@ -66,16 +66,8 @@ $users = [];
 /** @var User $user */
 foreach ($userRepository->findAll() as $user) {
     $users[$user->getToken()] = $user;
-}
-
-// Register name aliases
-$aliases = App::getUserAliasMap();
-$users = array_intersect_key($users, $aliases);
-foreach ($aliases as $userToken => $userAliases) {
-    if (array_key_exists($userToken, $aliases) && is_array($userAliases)) {
-        foreach ($userAliases as $userAlias) {
-            $users[$userAlias] =& $users[$userToken];
-        }
+    foreach ($user->getAliases() as $alias) {
+        $users[$alias] =& $users[$user->getToken()];
     }
 }
 
@@ -180,7 +172,7 @@ foreach ($calendars as $calendar) {
                 } catch (\PDOException $e) {
                     if ($user instanceof User) {
                         echo 'Failed to update personal holiday '.$date->format('Y-m-d').' for user '.
-                        ($user->getName() ?: '---').'): Entry exists!'.PHP_EOL;
+                            ($user->getName() ?: '---').'): Entry exists!'.PHP_EOL;
                     } else {
                         echo 'Failed to update business holiday '.$date->format('Y-m-d').
                             sprintf(' "%s"', $name).PHP_EOL;

@@ -52,21 +52,6 @@ use Tollwerk\Toggl\Ports\App;
 class DayRepository extends EntityRepository
 {
     /**
-     * Return all business holidays in a particular year
-     *
-     * @param int $year Year
-     * @return array Business holidays
-     */
-    public function getBusinessHolidaysByYear($year)
-    {
-        $timezone = new \DateTimeZone(App::getConfig('common.timezone'));
-        return $this->getBusinessHolidays(
-            new \DateTimeImmutable($year.'-01-01', $timezone),
-            new \DateTimeImmutable($year.'-12-31', $timezone)
-        );
-    }
-
-    /**
      * Return all business holidays in a particular time range
      *
      * @param \DateTimeImmutable $from Start date
@@ -90,23 +75,7 @@ class DayRepository extends EntityRepository
         } catch (QueryException $e) {
             echo $e->getMessage();
         }
-    }
-
-    /**
-     * Return all personal holidays of a particular user in a particular year
-     *
-     * @param User $user User
-     * @param int $year Year
-     * @return array Business holidays
-     */
-    public function getPersonalHolidaysByYear(User $user, $year)
-    {
-        $timezone = new \DateTimeZone(App::getConfig('common.timezone'));
-        return $this->getPersonalHolidays(
-            $user,
-            new \DateTimeImmutable($year.'-01-01', $timezone),
-            new \DateTimeImmutable($year.'-12-31', $timezone)
-        );
+        return [];
     }
 
     /**
@@ -136,6 +105,7 @@ class DayRepository extends EntityRepository
         } catch (QueryException $e) {
             echo $e->getMessage();
         }
+        return [];
     }
 
     /**
@@ -166,5 +136,6 @@ class DayRepository extends EntityRepository
         } catch (QueryException $e) {
             echo $e->getMessage();
         }
+        return [];
     }
 }

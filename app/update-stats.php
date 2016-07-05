@@ -36,11 +36,13 @@
 
 use Tollwerk\Toggl\Domain\Model\Stats;
 use Tollwerk\Toggl\Domain\Model\User;
+use Tollwerk\Toggl\Domain\Repository\UserRepository;
 use Tollwerk\Toggl\Ports\App;
 
 require_once __DIR__.DIRECTORY_SEPARATOR.'bootstrap.php';
 
 $entityManager = App::getEntityManager();
+/** @var UserRepository $userRepository */
 $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
 $statsRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Stats');
 $timezone = new \DateTimeZone(App::getConfig('common.timezone'));
@@ -49,27 +51,15 @@ $togglReportsClient = App::getTogglReportsClient();
 $workspaces = App::getConfig('toggl.workspaces');
 $dayStart = (new \DateTimeImmutable('today', $timezone))->modify('-1 week');
 $dayEnd = (new \DateTimeImmutable('tomorrow', $timezone))->modify('-1 second')->modify('-1 week');
-$userIds = [];
 
 // Collect the user IDs to query
-try {
-    $qb = $userRepository->createQueryBuilder('u');
-    $qb->where($qb->expr()->isNotNull('u.togglId'));
-
-    /** @var User $user */
-    foreach ($qb->getQuery()->getResult() as $user) {
-        $userIds[] = $user->getTogglId();
-    }
-} catch (\Doctrine\ORM\Query\QueryException $e) {
-    echo $e->getMessage();
-    exit;
-}
+$userIds = $userRepository->findToggleIds();
 
 // Run through all workspaces
 foreach ($workspaces as $workspace) {
 
     // Run through one week
-    for($day = 0; $day < 8; ++$day) {
+    for ($day = 0; $day < 8; ++$day) {
         // Request a summary report
         $report = $togglReportsClient->summary([
             'user_agent' => 'Tollwerk Toggl Dashboard',

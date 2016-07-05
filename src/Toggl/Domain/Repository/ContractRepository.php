@@ -5,7 +5,7 @@
  *
  * @category    Apparat
  * @package     Tollwerk\Toggl
- * @subpackage  Tollwerk\Toggl\Domain\Repository
+ * @subpackage  Tollwerk\Toggl\Domain
  * @author      Joschi Kuphal <joschi@tollwerk.de> / @jkphl
  * @copyright   Copyright © 2016 Joschi Kuphal <joschi@tollwerk.de> / @jkphl
  * @license     http://opensource.org/licenses/MIT The MIT License (MIT)
@@ -37,6 +37,7 @@
 namespace Tollwerk\Toggl\Domain\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query\QueryException;
 use Tollwerk\Toggl\Domain\Model\Contract;
 use Tollwerk\Toggl\Domain\Model\User;
 use Tollwerk\Toggl\Ports\App;
@@ -45,73 +46,10 @@ use Tollwerk\Toggl\Ports\App;
  * Contract repository
  *
  * @package Tollwerk\Toggl
- * @subpackage Tollwerk\Toggl\Domain\Repository
+ * @subpackage Tollwerk\Toggl\Domain
  */
 class ContractRepository extends EntityRepository
 {
-    /**
-     * Return the list of effective contracts of a particular user for a given period
-     *
-     * @param User $user User
-     * @param \DateTimeInterface|null $from Period start
-     * @param \DateTimeInterface|null $to Period start
-     * @return array Contracts ordered by timestamp
-     * @deprecated
-     */
-    public function getUserContractsByPeriod(User $user, \DateTimeInterface $from = null, \DateTimeInterface $to = null)
-    {
-        try {
-            $fromTimestamp = $toTimestamp = 0;
-
-            $qb = App::getEntityManager()->createQueryBuilder();
-            $qb->select('c')
-                ->from('Tollwerk\Toggl\Domain\Model\Contract', 'c')
-                ->where('c.user = :user')
-                ->setParameter('user', $user);
-
-            // Set a lower boundary
-            if ($from !== null) {
-                $fromTimestamp = $from->format('U');
-                $fromContract = $this->getEffectiveUserContractForDate($user, $from);
-                if ($fromContract instanceof Contract) {
-                    $qb->andWhere('c.date >= :from')
-                        ->setParameter('from', $fromContract->getDate()->format('Y-m-d'));
-                }
-            }
-
-            // Set an upper boundary
-            if ($to !== null) {
-                $toTimestamp = $to->format('U');
-                $toContract = $this->getEffectiveUserContractForDate($user, $to);
-                if ($toContract instanceof Contract) {
-                    $qb->andWhere('c.date >= :to')
-                        ->setParameter('to', $toContract->getDate()->format('Y-m-d'));
-                }
-            }
-
-            $qb->orderBy('c.date', 'ASC');
-//            echo $qb->getQuery()->getSQL();
-
-            $contracts = [];
-            /** @var Contract $contract */
-            foreach ($qb->getQuery()->execute() as $contract) {
-                $contractTimestamp = $contract->getDate()->format('U');
-                if ($fromTimestamp) {
-                    $contractTimestamp = max($contractTimestamp, $fromTimestamp);
-                }
-                if ($toTimestamp) {
-                    $contractTimestamp = min($contractTimestamp, $toTimestamp - 1);
-                }
-
-                $contracts[$contractTimestamp] = $contract;
-            }
-
-            return $contracts;
-        } catch (QueryException $e) {
-            echo $e->getMessage();
-        }
-    }
-
     /**
      * Return the list of effective contracts of a particular user for a given period
      *
@@ -123,8 +61,6 @@ class ContractRepository extends EntityRepository
     public function getUserContracts(User $user, \DateTimeInterface $from, \DateTimeInterface $to)
     {
         try {
-            $fromTimestamp = $toTimestamp = 0;
-
             $qb = App::getEntityManager()->createQueryBuilder();
             $qb->select('c')
                 ->from('Tollwerk\Toggl\Domain\Model\Contract', 'c')
@@ -151,6 +87,7 @@ class ContractRepository extends EntityRepository
         } catch (QueryException $e) {
             echo $e->getMessage();
         }
+        return [];
     }
 
     /**
@@ -178,5 +115,6 @@ class ContractRepository extends EntityRepository
         } catch (QueryException $e) {
             echo $e->getMessage();
         }
+        return null;
     }
 }

@@ -108,10 +108,11 @@ class App
         self::$devMode = !!$devMode;
         self::$rootDirectory = dirname(dirname(dirname(__DIR__))).DIRECTORY_SEPARATOR;
 
+        // Initialize the configuration
         $config = file_get_contents(self::$rootDirectory.'config'.DIRECTORY_SEPARATOR.'config.yml');
         self::$config = Yaml::parse($config);
-//        print_r(self::$config);
 
+        // Initialize doctrine
         self::initializeDoctrine();
     }
 
@@ -213,19 +214,5 @@ class App
             $config =& $config[$keyPart];
         }
         return $config;
-    }
-
-    /**
-     * Build a map of registered users and their aliases
-     *
-     * @return array User alias map
-     */
-    public static function getUserAliasMap()
-    {
-        $userAliases = [];
-        foreach (self::$config['user'] as $userToken => $userConfig) {
-            $userAliases[$userToken] = empty($userConfig['aliases']) ? [] : (array)$userConfig['aliases'];
-        }
-        return $userAliases;
     }
 }

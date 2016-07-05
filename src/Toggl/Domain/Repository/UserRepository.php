@@ -36,74 +36,39 @@
 
 namespace Tollwerk\Toggl\Domain\Repository;
 
-
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\QueryException;
-use Tollwerk\Toggl\Domain\Model\Stats;
-use Tollwerk\Toggl\Domain\Model\User;
 use Tollwerk\Toggl\Ports\App;
 
 /**
- * Stats repository
+ * User repository
  *
  * @package Tollwerk\Toggl
- * @subpackage Tollwerk\Toggl\Domain\Repository
+ * @subpackage Tollwerk\Toggl\Domain
  */
-class StatsRepository extends EntityRepository
+class UserRepository extends EntityRepository
 {
     /**
-     * Return all stats of a particular user for a given period
+     * Return all Toggl IDs of active users
      *
-     * @param User $user User
-     * @param \DateTimeInterface $from Start date
-     * @param \DateTimeInterface $to End date
-     * @return array User stats
+     * @return array Toggl IDs
      */
-    public function getUserStats(User $user, \DateTimeInterface $from, \DateTimeInterface $to)
+    public function findToggleIds()
     {
         try {
             $qb = App::getEntityManager()->createQueryBuilder();
-            $qb->select('s')
-                ->from('Tollwerk\Toggl\Domain\Model\Stats', 's')
-                ->where('s.user = :user')
-                ->andWhere('s.date >= :from')
-                ->andWhere('s.date <= :to')
-                ->setParameter('user', $user)
-                ->setParameter('from', $from->format('Y-m-d'))
-                ->setParameter('to', $to->format('Y-m-d'))
-                ->setParameter('user', $user)
-                ->orderBy('s.date', 'ASC');
-//            echo $qb->getQuery()->getSQL();
-            return $qb->getQuery()->execute();
+            $qb->select('u.togglId')
+                ->from('Tollwerk\Toggl\Domain\Model\User', 'u')
+                ->where('u.active = 1')
+                ->andWhere($qb->expr()->isNotNull('u.togglId'));
+            $togglIds = [];
+            foreach ($qb->getQuery()->execute() as $user) {
+                $togglIds[] = $user['togglId'];
+            }
+            return $togglIds;
         } catch (QueryException $e) {
             echo $e->getMessage();
         }
         return [];
-    }
-
-    /**
-     * Return the stats of a user at a particular date (if any)
-     *
-     * @param User $user User
-     * @param \DateTimeInterface Date
-     * @return Stats|null User stats
-     */
-    public function getUserStatsByDate(User $user, \DateTimeInterface $date)
-    {
-        try {
-            $qb = App::getEntityManager()->createQueryBuilder();
-            $qb->select('s')
-                ->from('Tollwerk\Toggl\Domain\Model\Stats', 's')
-                ->where('s.user = :user')
-                ->andWhere('s.date = :date')
-                ->setParameter('user', $user)
-                ->setParameter('date', $date->format('Y-m-d'));
-//            echo $qb->getQuery()->getSQL();
-            $result = $qb->getQuery()->execute();
-            return count($result) ? current($result) : null;
-        } catch (QueryException $e) {
-            echo $e->getMessage();
-        }
-        return null;
     }
 }

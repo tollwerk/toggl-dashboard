@@ -239,7 +239,8 @@ class Day
      *
      * @return int Day of the year
      */
-    public function getDayOfYear() {
+    public function getDayOfYear()
+    {
         return $this->date->format('z');
     }
 
@@ -248,7 +249,8 @@ class Day
      *
      * @return int Month
      */
-    public function getMonth() {
+    public function getMonth()
+    {
         return $this->date->format('n');
     }
 
@@ -257,7 +259,8 @@ class Day
      *
      * @return int Day
      */
-    public function getDay() {
+    public function getDay()
+    {
         return $this->date->format('j');
     }
 }

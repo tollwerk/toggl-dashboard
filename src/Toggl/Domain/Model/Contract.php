@@ -96,6 +96,13 @@ class Contract
      * @Column(type="float")
      */
     protected $costsPerMonth;
+    /**
+     * Overtime offset
+     *
+     * @var float
+     * @Column(type="float")
+     */
+    protected $overtimeOffset;
 
     /**
      * Return the day ID
@@ -253,5 +260,15 @@ class Contract
     public function setCostsPerMonth($costsPerMonth)
     {
         $this->costsPerMonth = $costsPerMonth;
+    }
+
+    /**
+     * Return the overtime offset
+     *
+     * @return float Overtime offset
+     */
+    public function getOvertimeOffset()
+    {
+        return $this->overtimeOffset;
     }
 }

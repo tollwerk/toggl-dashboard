@@ -46,7 +46,7 @@ use Tollwerk\Toggl\Ports\App;
  *
  * @package Tollwerk\Toggl
  * @subpackage Tollwerk\Toggl\Domain\Model
- * @Entity
+ * @Entity(repositoryClass="Tollwerk\Toggl\Domain\Repository\UserRepository")
  * @Table(name="user")
  */
 class User
@@ -87,6 +87,13 @@ class User
      * @Column(length=64)
      */
     protected $token;
+    /**
+     * User aliases
+     *
+     * @var string
+     * @Column(length=256)
+     */
+    protected $aliases;
     /**
      * Overtime date
      *
@@ -299,16 +306,20 @@ class User
         $entityManager = App::getEntityManager();
         /** @var DayRepository $dayRepository */
         $dayRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Day');
-        return $dayRepository->getPersonalHolidays($this, $year);
+        $timezone = new \DateTimeZone(App::getConfig('common.timezone'));
+        return $dayRepository->getPersonalHolidays(
+            $this,
+            new \DateTimeImmutable($year.'-01-01', $timezone),
+            new \DateTimeImmutable($year.'-12-31', $timezone)
+        );
     }
 
     /**
      * Return the list of associated statistics
      *
-     * @param int|null $year Optional: year
      * @return Stats[] Statistics
      */
-    public function getStats($year = null)
+    public function getStats()
     {
         return $this->stats;
     }
@@ -329,7 +340,25 @@ class User
         $entityManager = App::getEntityManager();
         /** @var ContractRepository $contractRepository */
         $contractRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Contract');
-        return $contractRepository->getUserContractsByPeriod($this, $from, $to);
+        return $contractRepository->getUserContracts($this, $from, $to);
+    }
+
+    /**
+     * Return the effective contract for this user at a particular date
+     *
+     * @param \DateTimeInterface|null $date Date (default: now)
+     * @return null|Contract Effective contract
+     */
+    public function getEffectiveContract(\DateTimeInterface $date = null)
+    {
+        if ($date === null) {
+            $timezone = new \DateTimeZone(App::getConfig('common.timezone'));
+            $date = new \DateTimeImmutable('now', $timezone);
+        }
+        $entityManager = App::getEntityManager();
+        /** @var ContractRepository $contractRepository */
+        $contractRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Contract');
+        return $contractRepository->getEffectiveUserContractForDate($this, $date);
     }
 
     /**
@@ -354,5 +383,15 @@ class User
     public function isActive()
     {
         return $this->active;
+    }
+
+    /**
+     * Return the user aliases
+     *
+     * @return array User aliases
+     */
+    public function getAliases()
+    {
+        return array_filter(preg_split('%[^a-z]+%', $this->aliases));
     }
 }

@@ -34,8 +34,10 @@
  *  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ***********************************************************************************/
 
-use Tollwerk\Toggl\Domain\Model\Stats;
+use Tollwerk\Toggl\Domain\Model\Contract;
 use Tollwerk\Toggl\Domain\Model\User;
+use Tollwerk\Toggl\Domain\Report\DayReport;
+use Tollwerk\Toggl\Domain\Report\UserReport;
 use Tollwerk\Toggl\Ports\App;
 
 require_once __DIR__.DIRECTORY_SEPARATOR.'bootstrap.php';
@@ -47,38 +49,63 @@ $dayRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Day'
 $timezone = new \DateTimeZone(App::getConfig('common.timezone'));
 $today = new \DateTimeImmutable('today', $timezone);
 
+/**
+ * Update the overtime balance for a particular user and a particular year
+ *
+ * @param User $user User
+ * @param Contract $contract Effective user contract
+ * @param int $year Year
+ * @param float $overtimeBalance Overtime balance offset
+ * @return float Overtime balance
+ */
+function updateYearlyUserOvertime(User $user, Contract $contract, $year, $overtimeBalance)
+{
+    // Get a user report for the year
+    $userReport = UserReport::byYear($user, $year);
+    $startDay = ($contract->getDate()->format('Y') == $year) ? $contract->getDate()->format('z') : 0;
+    $endDay = (date('Y') == $year) ?
+        (new \DateTimeImmutable('now', $GLOBALS['timezone']))->format('z') :
+        (365 + intval((new \DateTimeImmutable($year.'-01-01', $GLOBALS['timezone']))->format('L')));
+
+    // Run through the relevant user report range
+    /** @var DayReport $dayReport */
+    foreach ($userReport->getRange($startDay, $endDay) as $dayReport) {
+
+        // If this is a working day (and not holiday) for the user
+        if ($dayReport->isWorkingDay() && !$dayReport->isHoliday()) {
+            // Subtract the daily working hours
+            $overtimeBalance -= $contract->getWorkingHoursPerDay();
+        }
+
+        // Add the captured time
+        $overtimeBalance += $dayReport->getTimeActual() / 3600;
+    }
+
+    return $overtimeBalance;
+}
+
 // Run through all users
 /** @var User $user */
-foreach ($userRepository->findAll() as $user) {
+foreach ($userRepository->findBy(['active' => 1]) as $user) {
     try {
         echo 'Updating overtimes of '.$user->getName().PHP_EOL;
 
-        $userConfig = array_merge(App::getConfig('common'), App::getConfig('user.'.$user->getToken()));
-        $userWorkingDays = array_combine($userConfig['working_days'], $userConfig['working_days']);
-        $userWorkingHoursPerDay = floatval($userConfig['working_hours_per_day']);
-        $userWorkingTimeBalance = $user->getOvertimeOffset();
+        // Find the latest user contract
+        $userContract = $user->getEffectiveContract();
+        if ($userContract instanceof Contract) {
+            $userWorkingTimeBalance = $userContract->getOvertimeOffset();
 
-        $userOvertimeDate = $user->getOvertimeDate();
-        while ($userOvertimeDate <= $today) {
-
-            // If this is a working day for the user
-            if (array_key_exists($userOvertimeDate->format('w'), $userWorkingDays)
-                && !$dayRepository->isUserHoliday($user, $userOvertimeDate)
-            ) {
-                $userWorkingTimeBalance -= $userWorkingHoursPerDay;
+            // Run through all contract years
+            for ($year = $userContract->getDate()->format('Y'); $year <= date('Y'); ++$year) {
+                $userWorkingTimeBalance = updateYearlyUserOvertime($user, $userContract, $year, $userWorkingTimeBalance);
             }
 
-            $userStats = $user->getDateStats($userOvertimeDate);
-            if ($userStats instanceof Stats) {
-                $userWorkingTimeBalance += $userStats->getTotal() / 3600;
-            }
+            echo 'Working time balance of '.$user->getName().': '.$userWorkingTimeBalance.PHP_EOL;
+            $user->setOvertime($userWorkingTimeBalance);
 
-            echo 'Working time balance of '.$user->getName().' for '.$userOvertimeDate->format('Y-m-d').': '.$userWorkingTimeBalance.PHP_EOL;
-
-            $userOvertimeDate = $userOvertimeDate->modify('+1 day');
+        } else {
+            echo 'No effective contract for '.$user->getName().', skipping ...'.PHP_EOL;
         }
-
-        $user->setOvertime($userWorkingTimeBalance);
 
     } catch (\InvalidArgumentException $e) {
         continue;
