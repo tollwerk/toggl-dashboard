@@ -242,13 +242,13 @@ class UserReport
 
         // Run through all working days and collect the working day states
         foreach ($this->days as $reportDay) {
-            // If this is a working day for the user
+            // If this is a working day for the user and not a business holiday
             if ($reportDay->isWorkingDay() && !$reportDay->getBusinessHoliday()) {
                 ++$this->workingDays;
                 $contractId = $reportDay->getContract()->getId();
 
-                // If this is not a personal holiday
-                if (!$reportDay->getPersonalHoliday()) {
+                // If this is not a true personal holiday
+                if ($reportDay->getPersonalHoliday() !== DayReport::DEFAULT_HOLIDAY) {
 
                     // Weekly working days
                     if ($reportDay->getYear() == $this->year) {
@@ -330,11 +330,19 @@ class UserReport
         /** @var Day $personalHoliday */
         foreach ($this->dayRepository->getPersonalHolidays($this->user, $this->from, $this->to) as $personalHoliday) {
             $yearDay = $personalHoliday->getDate()->format('z');
-            $this->days[$yearDay]->setPersonalHoliday($personalHoliday->getName() ?: DayReport::DEFAULT_HOLIDAY);
-            ++$this->personalHolidaysPlanned;
+            $personalHolidayName = $personalHoliday->getName();
+            $this->days[$yearDay]->setPersonalHoliday($personalHolidayName ?: DayReport::DEFAULT_HOLIDAY);
 
-            if ($personalHoliday->getDate() < $today) {
-                ++$this->personalHolidaysPast;
+            // If it's a regular personal holiday (and not e.g. overtime reduction)
+            if (!$personalHolidayName) {
+
+                // Set as planned
+                ++$this->personalHolidaysPlanned;
+
+                // If the day already passed
+                if ($personalHoliday->getDate() < $today) {
+                    ++$this->personalHolidaysPast;
+                }
             }
         }
 

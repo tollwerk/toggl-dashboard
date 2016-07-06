@@ -281,11 +281,14 @@ class DayReport
     /**
      * Return wheter this is a (business or personal) holiday
      *
+     * @param bool $truePersonalHolidaysOnly Exclude overtime reduction holidays
      * @return bool Holiday
      */
-    public function isHoliday()
+    public function isHoliday($truePersonalHolidaysOnly = false)
     {
-        return ($this->contract instanceof Contract) && ($this->getBusinessHoliday() || $this->getPersonalHoliday());
+        $isPersonalHoliday = $truePersonalHolidaysOnly
+            ? ($this->getPersonalHoliday() === self::DEFAULT_HOLIDAY) : !!$this->getPersonalHoliday();
+        return ($this->contract instanceof Contract)  && ($this->getBusinessHoliday() || $isPersonalHoliday);
     }
 
     /**

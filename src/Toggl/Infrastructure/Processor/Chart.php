@@ -175,10 +175,10 @@ class Chart
                 );
 
             // If this is a personal holiday
-            } elseif ($dayReport->getPersonalHoliday()) {
+            } elseif ($personalHoliday = $dayReport->getPersonalHoliday()) {
                 $plotBands[] = self::plotBand(
                     $index - .5, $index + .5, self::COLOR_HOLIDAY_PERSONAL_BG, self::COLOR_HOLIDAY,
-                    _('holiday.personal')
+                    ($personalHoliday === DayReport::DEFAULT_HOLIDAY) ? _('holiday.personal') : $personalHoliday
                 );
 
                 // Else if the day should be used for the week average

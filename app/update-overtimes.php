@@ -64,6 +64,8 @@ function updateYearlyUserOvertime(User $user, Contract $contract, $year, $overti
     $userReport = UserReport::byYear($user, $year);
     $startDay = ($contract->getDate()->format('Y') == $year) ? $contract->getDate()->format('z') : 0;
     $endDay = (date('Y') == $year) ?
+
+        // "now" should be "tomorrow" to have realtime calculations
         (new \DateTimeImmutable('now', $GLOBALS['timezone']))->format('z') :
         (365 + intval((new \DateTimeImmutable($year.'-01-01', $GLOBALS['timezone']))->format('L')));
 
@@ -71,8 +73,8 @@ function updateYearlyUserOvertime(User $user, Contract $contract, $year, $overti
     /** @var DayReport $dayReport */
     foreach ($userReport->getRange($startDay, $endDay) as $dayReport) {
 
-        // If this is a working day (and not holiday) for the user
-        if ($dayReport->isWorkingDay() && !$dayReport->isHoliday()) {
+        // If this is a working day (and not a true holiday) for the user
+        if ($dayReport->isWorkingDay() && !$dayReport->isHoliday(true)) {
             // Subtract the daily working hours
             $overtimeBalance -= $contract->getWorkingHoursPerDay();
         }

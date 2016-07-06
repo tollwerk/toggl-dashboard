@@ -130,6 +130,12 @@ foreach ($calendars as $calendar) {
 
                     // Set the user
                     $user = $users[$token];
+
+                    // Register the remainder
+                    $name = trim(substr($description, strlen($token)));
+                    if (!strlen($name)) {
+                        $name = null;
+                    }
                     break;
 
                 // Business holiday
