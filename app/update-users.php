@@ -59,6 +59,9 @@ foreach ($workspaces as $workspace) {
         if (!($user instanceof User)) {
             $user = new User();
             $user->setTogglId($workspaceUser['id']);
+            $user->setActive(true);
+            $user->setAliases('');
+            $user->setOvertime(0);
         }
 
         $user->setName($workspaceUser['fullname']);

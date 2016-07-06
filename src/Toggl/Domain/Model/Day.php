@@ -90,6 +90,20 @@ class Day
      */
     protected $type;
     /**
+     * Excused
+     *
+     * @var boolean
+     * @Column(type="boolean")
+     */
+    protected $excused;
+    /**
+     * Overtime reduction
+     *
+     * @var boolean
+     * @Column(type="boolean")
+     */
+    protected $overtime;
+    /**
      * Personal holiday
      *
      * @var int
@@ -262,5 +276,49 @@ class Day
     public function getDay()
     {
         return $this->date->format('j');
+    }
+
+    /**
+     * Return whether this is an excused holiday
+     *
+     * @return boolean Excused holiday
+     */
+    public function isExcused()
+    {
+        return $this->excused;
+    }
+
+    /**
+     * Return whether this is an overtime reduction holiday
+     *
+     * @return boolean Overtime reduction holiday
+     */
+    public function isOvertime()
+    {
+        return $this->overtime;
+    }
+
+    /**
+     * Set whether this is an excused holiday
+     *
+     * @param boolean $excused Excused holiday
+     * @return Day
+     */
+    public function setExcused($excused)
+    {
+        $this->excused = $excused;
+        return $this;
+    }
+
+    /**
+     * Set whether this is an overtime reduction holiday
+     *
+     * @param boolean $overtime Overtime reduction holiday
+     * @return Day
+     */
+    public function setOvertime($overtime)
+    {
+        $this->overtime = $overtime;
+        return $this;
     }
 }

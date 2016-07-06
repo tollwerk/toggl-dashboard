@@ -27,6 +27,7 @@ calendar:
     url: https://calendar.google.com/calendar/ical/rsvo3pko3vd0g9ta29jkr8q9is%40group.calendar.google.com/private-7e2614ba26b46d0e67c8fd49c346ca6d/basic.ics
     refresh: 86400
     type: 0
+    excused: [krank,krankheit,arzt,entschuldigt]
   business-holidays:
     url: http://i.cal.to/ical/65/bayern/feiertage/e15a0975.8ed5c461-47fa1761.ics
     refresh: 7776000

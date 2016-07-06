@@ -175,10 +175,10 @@ class Chart
                 );
 
             // If this is a personal holiday
-            } elseif ($personalHoliday = $dayReport->getPersonalHoliday()) {
+            } elseif ($dayReport->getPersonalHoliday()) {
                 $plotBands[] = self::plotBand(
                     $index - .5, $index + .5, self::COLOR_HOLIDAY_PERSONAL_BG, self::COLOR_HOLIDAY,
-                    ($personalHoliday === DayReport::DEFAULT_HOLIDAY) ? _('holiday.personal') : $personalHoliday
+                    self::personalHolidayLabel($dayReport)
                 );
 
                 // Else if the day should be used for the week average
@@ -455,5 +455,25 @@ class Chart
             $rgb[$color] = round(255 - $factor * (255 - $rgb[$color]));
         }
         return $rgb;
+    }
+
+    /**
+     * Return the label for a personal holiday
+     *
+     * @param DayReport $dayReport Day report
+     * @return string Personal holiday label
+     */
+    protected static function personalHolidayLabel(DayReport $dayReport) {
+        $personalHoliday = $dayReport->getPersonalHoliday();
+        if ($personalHoliday === DayReport::DEFAULT_HOLIDAY) {
+            return _('holiday.personal');
+        }
+        if ($dayReport->isExcused()) {
+            return _('holiday.personal.excused');
+        }
+        if ($dayReport->isOvertime()) {
+            return _('holiday.personal.overtime');
+        }
+        return strval($personalHoliday);
     }
 }

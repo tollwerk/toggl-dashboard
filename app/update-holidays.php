@@ -77,6 +77,8 @@ foreach ($calendars as $calendar) {
     // Skip if there's no valid calendar URL
     if (!empty($calendar['url'])) {
         $url = $calendar['url'];
+        $excusedKeywords = (array_key_exists('excused', $calendar) && is_array($calendar['excused']))
+            ? array_map('strtolower', array_filter($calendar['excused'])) : [];
         $refresh = empty($calendar['refresh']) ? 86400 : intval($calendar['refresh']);
         $type = empty($calendar['type']) ? Day::PERSONAL_HOLIDAY : intval($calendar['type']);
 
@@ -109,6 +111,8 @@ foreach ($calendars as $calendar) {
             // Validate and prepare the holiday data
             $user = null;
             $name = null;
+            $overtime = false;
+            $excused = false;
 
             // Type dependent processing
             switch ($type) {
@@ -135,6 +139,14 @@ foreach ($calendars as $calendar) {
                     $name = trim(substr($description, strlen($token)));
                     if (!strlen($name)) {
                         $name = null;
+
+                        // If a excused holiday keyword is given
+                    } elseif (in_array(strtolower($name), $excusedKeywords)) {
+                        $excused = true;
+
+                        // Else: overtime reducing holiday
+                    } else {
+                        $overtime = true;
                     }
                     break;
 
@@ -165,6 +177,8 @@ foreach ($calendars as $calendar) {
                 $day->setUser($user);
                 $day->setName($name);
                 $day->setDate($date);
+                $day->setOvertime($overtime);
+                $day->setExcused($excused);
 
                 try {
                     $entityManager->persist($day);

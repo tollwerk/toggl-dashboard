@@ -66,6 +66,18 @@ class DayReport
      */
     protected $personalHoliday = false;
     /**
+     * Excused holiday
+     *
+     * @var bool
+     */
+    protected $excused = false;
+    /**
+     * Overtime reduction holiday
+     *
+     * @var bool
+     */
+    protected $overtime = false;
+    /**
      * Working day state
      *
      * @var bool|null
@@ -256,11 +268,15 @@ class DayReport
      * Set the personal holiday state / name of this day
      *
      * @param bool|string $personalHoliday Personal holiday state / name
+     * @param bool $excused Excused holiday
+     * @param bool $overtime Overtime reduction holiday
      * @return DayReport Self reference
      */
-    public function setPersonalHoliday($personalHoliday = self::DEFAULT_HOLIDAY)
+    public function setPersonalHoliday($personalHoliday = self::DEFAULT_HOLIDAY, $excused = false, $overtime = false)
     {
         $this->personalHoliday = $personalHoliday;
+        $this->excused = !!$excused;
+        $this->overtime = !!$overtime;
         return $this;
     }
 
@@ -286,9 +302,11 @@ class DayReport
      */
     public function isHoliday($truePersonalHolidaysOnly = false)
     {
-        $isPersonalHoliday = $truePersonalHolidaysOnly
-            ? ($this->getPersonalHoliday() === self::DEFAULT_HOLIDAY) : !!$this->getPersonalHoliday();
-        return ($this->contract instanceof Contract)  && ($this->getBusinessHoliday() || $isPersonalHoliday);
+        $isPersonalHoliday = !!$this->getPersonalHoliday();
+        if ($truePersonalHolidaysOnly) {
+            $isPersonalHoliday = $isPersonalHoliday && !$this->isExcused() && !$this->isOvertime();
+        }
+        return ($this->contract instanceof Contract) && ($this->getBusinessHoliday() || $isPersonalHoliday);
     }
 
     /**
@@ -431,5 +449,25 @@ class DayReport
     public function getRate()
     {
         return $this->rate;
+    }
+
+    /**
+     * Return whether this is an excused holiday
+     *
+     * @return boolean Excused holiday
+     */
+    public function isExcused()
+    {
+        return $this->excused;
+    }
+
+    /**
+     * Return whether this is an overtime reduction holiday
+     *
+     * @return boolean Overtime reduction holiday
+     */
+    public function isOvertime()
+    {
+        return $this->overtime;
     }
 }

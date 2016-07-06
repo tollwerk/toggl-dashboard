@@ -35,7 +35,10 @@
 
 namespace Tollwerk\Dashboard;
 
-use AJT\Toggl\TogglClient;use Tollwerk\Toggl\Application\Service\StatisticsService;use Tollwerk\Toggl\Domain\Model\User;use Tollwerk\Toggl\Domain\Report\UserReport;use Tollwerk\Toggl\Infrastructure\Processor\Chart;use Tollwerk\Toggl\Infrastructure\Renderer\Html;
+use Tollwerk\Toggl\Domain\Model\User;
+use Tollwerk\Toggl\Domain\Report\UserReport;
+use Tollwerk\Toggl\Infrastructure\Processor\Chart;
+use Tollwerk\Toggl\Infrastructure\Renderer\Html;
 
 //header('Content-Type: text/plain');
 //header('Content-Type: application/json');
@@ -73,6 +76,18 @@ $currentCalendarWeek = empty($_GET['cw']) ? intval(ltrim((new \DateTimeImmutable
     '0')) : intval($_GET['cw']);
 $currentCalendarWeekStart = clone $firstMondayOfYear;
 $currentCalendarWeekStart = $currentCalendarWeekStart->modify('+'.($currentCalendarWeek - 1).' weeks');
+$currentCalendarWeekEnd = clone $currentCalendarWeekStart;
+$currentCalendarWeekEnd = $currentCalendarWeekEnd->modify('+6 days');
+
+$calendarWeekStartFormat = 'j.';
+if ($currentCalendarWeekStart->format('n') != $currentCalendarWeekEnd->format('n')) {
+    $calendarWeekStartFormat .= 'n.';
+
+    if ($currentCalendarWeekStart->format('Y') != $currentCalendarWeekEnd->format('Y')) {
+        $calendarWeekStartFormat .= 'Y';
+    }
+}
+$dateStr = $currentCalendarWeekStart->format($calendarWeekStartFormat).'-'.$currentCalendarWeekEnd->format('j.n.Y');
 
 ?><!DOCTYPE html>
 <html lang="de">
@@ -80,7 +95,7 @@ $currentCalendarWeekStart = $currentCalendarWeekStart->modify('+'.($currentCalen
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="refresh" content="900; URL=index.php">
-    <title>Toggl Dashboard</title>
+    <title><?= sprintf(_('header.calendarweek'), $dateStr, $currentCalendarWeek); ?> — Toggl Dashboard</title>
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/no-data-to-display.js"></script>
@@ -88,6 +103,7 @@ $currentCalendarWeekStart = $currentCalendarWeekStart->modify('+'.($currentCalen
     <link href="/css/dashboard.css" type="text/css" rel="stylesheet"/>
 </head>
 <body>
+<h1><?= sprintf(_('header.calendarweek'), $dateStr, $currentCalendarWeek); ?></h1>
 <nav class="weeks"><?php
     for ($monday = clone $firstMondayOfYear; $monday->format('Y') == date('Y'); $monday = $monday->modify('+1 week')):
         $week = ltrim($monday->format('W'), '0');
@@ -113,20 +129,20 @@ $currentCalendarWeekStart = $currentCalendarWeekStart->modify('+'.($currentCalen
 
         ?>
         <figure class="time-chart">
-            <figcaption><?= Html::h($userReport->getUser()->getName()); ?></figcaption>
-            <div id="time-chart-<?= $userReport->getUser()->getToken(); ?>" style="width:300px;height:260px">
-                <script>Tollwerk.Dashboard.initUserTimeChart('time-chart-<?= $userReport->getUser()->getToken(); ?>', <?= $userChart; ?>);</script>
-            </div>
-            <dl>
-                <dt><?= _('info.overtime'); ?></dt>
-                <dd class="<?= $userOvertimeClass; ?>"><?= Html::h($userOvertime); ?></dd>
-                <dt><?= sprintf(_('info.holiday'), $currentCalendarWeekStart->format('Y')); ?></dt>
-                <dd><?= $userReport->getPersonalHolidays(); ?></dd>
-                <dt><?= sprintf(_('info.holiday.taken'), $currentCalendarWeekStart->format('Y')); ?></dt>
-                <dd><?= $userReport->getPersonalHolidaysPast(); ?></dd>
-                <dt><?= sprintf(_('info.holiday.remaining'), $currentCalendarWeekStart->format('Y')); ?></dt>
-                <dd class="<?= $userRemainingHolidaysClass; ?>"><?= $userRemainingHolidays; ?></dd>
-            </dl>
+        <figcaption><?= Html::h($userReport->getUser()->getName()); ?></figcaption>
+        <div id="time-chart-<?= $userReport->getUser()->getToken(); ?>" style="width:300px;height:260px">
+            <script>Tollwerk.Dashboard.initUserTimeChart('time-chart-<?= $userReport->getUser()->getToken(); ?>', <?= $userChart; ?>);</script>
+        </div>
+        <dl>
+            <dt><?= _('info.overtime'); ?></dt>
+            <dd class="<?= $userOvertimeClass; ?>"><?= Html::h($userOvertime); ?></dd>
+            <dt><?= sprintf(_('info.holiday'), $currentCalendarWeekStart->format('Y')); ?></dt>
+            <dd><?= $userReport->getPersonalHolidays(); ?></dd>
+            <dt><?= sprintf(_('info.holiday.taken'), $currentCalendarWeekStart->format('Y')); ?></dt>
+            <dd><?= $userReport->getPersonalHolidaysPast(); ?></dd>
+            <dt><?= sprintf(_('info.holiday.remaining'), $currentCalendarWeekStart->format('Y')); ?></dt>
+            <dd class="<?= $userRemainingHolidaysClass; ?>"><?= $userRemainingHolidays; ?></dd>
+        </dl>
         </figure><?php
 
     endforeach;

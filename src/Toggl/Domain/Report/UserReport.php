@@ -248,7 +248,7 @@ class UserReport
                 $contractId = $reportDay->getContract()->getId();
 
                 // If this is not a true personal holiday
-                if ($reportDay->getPersonalHoliday() !== DayReport::DEFAULT_HOLIDAY) {
+                if (!$reportDay->isHoliday(true)) {
 
                     // Weekly working days
                     if ($reportDay->getYear() == $this->year) {
@@ -331,10 +331,14 @@ class UserReport
         foreach ($this->dayRepository->getPersonalHolidays($this->user, $this->from, $this->to) as $personalHoliday) {
             $yearDay = $personalHoliday->getDate()->format('z');
             $personalHolidayName = $personalHoliday->getName();
-            $this->days[$yearDay]->setPersonalHoliday($personalHolidayName ?: DayReport::DEFAULT_HOLIDAY);
+            $this->days[$yearDay]->setPersonalHoliday(
+                $personalHolidayName ?: DayReport::DEFAULT_HOLIDAY,
+                $personalHoliday->isExcused(),
+                $personalHoliday->isOvertime()
+            );
 
-            // If it's a regular personal holiday (and not e.g. overtime reduction)
-            if (!$personalHolidayName) {
+            // If it's a regular personal holiday (and not e.g. overtime reduction or an excused holiday)
+            if ($this->days[$yearDay]->isHoliday(true)) {
 
                 // Set as planned
                 ++$this->personalHolidaysPlanned;

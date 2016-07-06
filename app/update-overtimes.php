@@ -74,7 +74,7 @@ function updateYearlyUserOvertime(User $user, Contract $contract, $year, $overti
     foreach ($userReport->getRange($startDay, $endDay) as $dayReport) {
 
         // If this is a working day (and not a true holiday) for the user
-        if ($dayReport->isWorkingDay() && !$dayReport->isHoliday(true)) {
+        if ($dayReport->isWorkingDay() && !$dayReport->isHoliday(true) && !$dayReport->isExcused()) {
             // Subtract the daily working hours
             $overtimeBalance -= $contract->getWorkingHoursPerDay();
         }

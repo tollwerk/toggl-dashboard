@@ -95,20 +95,6 @@ class User
      */
     protected $aliases;
     /**
-     * Overtime date
-     *
-     * @var \DateTime
-     * @Column(type="date")
-     */
-    protected $overtimeDate;
-    /**
-     * Overtime offset
-     *
-     * @var float
-     * @Column(type="float")
-     */
-    protected $overtimeOffset;
-    /**
      * Overtime
      *
      * @var float
@@ -226,50 +212,6 @@ class User
     }
 
     /**
-     * Return the overtime offset date
-     *
-     * @return \DateTime Overtime offset date
-     */
-    public function getOvertimeDate()
-    {
-        return $this->overtimeDate;
-    }
-
-    /**
-     * Set the overtime offset date
-     *
-     * @param \DateTime $overtimeDate Overtime offset date
-     * @return User
-     */
-    public function setOvertimeDate($overtimeDate)
-    {
-        $this->overtimeDate = $overtimeDate;
-        return $this;
-    }
-
-    /**
-     * Return the overtime offset
-     *
-     * @return float Overtime offset
-     */
-    public function getOvertimeOffset()
-    {
-        return $this->overtimeOffset;
-    }
-
-    /**
-     * Set the overtime offset
-     *
-     * @param float $overtimeOffset Overtime offset
-     * @return User
-     */
-    public function setOvertimeOffset($overtimeOffset)
-    {
-        $this->overtimeOffset = $overtimeOffset;
-        return $this;
-    }
-
-    /**
      * Return the current overtime
      *
      * @return float Current overtime
@@ -376,6 +318,18 @@ class User
     }
 
     /**
+     * Set whether this is an active user
+     *
+     * @param boolean $active Active user
+     * @return User
+     */
+    public function setActive($active)
+    {
+        $this->active = $active;
+        return $this;
+    }
+
+    /**
      * Return whether the user is ative
      *
      * @return boolean Active user
@@ -383,6 +337,18 @@ class User
     public function isActive()
     {
         return $this->active;
+    }
+
+    /**
+     * Set the user aliases (comma-separated)
+     *
+     * @param string $aliases Comma separated aliases
+     * @return User
+     */
+    public function setAliases($aliases)
+    {
+        $this->aliases = $aliases;
+        return $this;
     }
 
     /**
