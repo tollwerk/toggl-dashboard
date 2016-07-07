@@ -167,6 +167,11 @@ class Chart
             $dayTotal = $dayReport->getTimeActual() ? self::round($dayReport->getTimeActual() / 3600) : null;
             $dayBillable = $dayReport->getBillableActual() ? self::round($dayReport->getBillableActual() / 3600) : null;
 
+//            $dayBillableTarget = $dayReport->getBillableTarget() ?: null;
+//            $dayBillableStatus = $dayBillableTarget * $dayReport->getRevenueStatus();
+//            echo $dayBillable.'/'.$dayBillableStatus.'<br/>';
+            // TODO: Set $dayBillableStatus as width and $dayBillable as label, also for the average calculations
+
             // If this is a business holiday
             if ($businessHoliday = $dayReport->getBusinessHoliday()) {
                 $plotBands[] = self::plotBand(

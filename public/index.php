@@ -47,11 +47,9 @@ require_once dirname(__DIR__).DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR.'boo
 $entityManager = \Tollwerk\Toggl\Ports\App::getEntityManager();
 $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\User');
 /** @var User[] $users */
-//$users = [5 => $userRepository->find(5), 6 => $userRepository->find(6)];
-//$users = [5 => $userRepository->find(5)];
 $users = [];
 /** @var User $user */
-foreach ($userRepository->findBy(['active' => true]) as $user) {
+foreach ($userRepository->findBy(['active' => true/*, 'id' => 7*/]) as $user) {
     $users[$user->getId()] = $user;
 }
 $userReports = [];
