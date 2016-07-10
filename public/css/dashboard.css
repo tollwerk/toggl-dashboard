@@ -9,6 +9,7 @@ body {
 
 .time-chart {
     display: inline-block;
+    vertical-align: top;
 }
 
 figcaption {

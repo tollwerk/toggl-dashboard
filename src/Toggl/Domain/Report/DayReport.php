@@ -132,6 +132,12 @@ class DayReport
      */
     protected $revenueTarget = 0;
     /**
+     * Revenue sum
+     *
+     * @var float
+     */
+    protected $revenueSum = 0;
+    /**
      * Revenue status
      *
      * @var float
@@ -358,7 +364,8 @@ class DayReport
         $this->timeStatus = $this->timeTarget ? ($this->timeActual / $this->timeTarget) : null;
         $this->billableActual = $stats->getBillable();
         $this->billableStatus = $this->billableTarget ? ($this->billableActual / $this->billableTarget) : null;
-        $this->revenueStatus = $this->revenueTarget ? ($stats->getBillableSum() / $this->revenueTarget) : null;
+        $this->revenueSum = $stats->getBillableSum();
+        $this->revenueStatus = $this->revenueTarget ? ($this->revenueSum / $this->revenueTarget) : null;
     }
 
     /**
@@ -429,6 +436,16 @@ class DayReport
     public function getRevenueTarget()
     {
         return $this->revenueTarget;
+    }
+
+    /**
+     * Get the revenue sum
+     *
+     * @return float Revenue sum
+     */
+    public function getRevenueSum()
+    {
+        return $this->revenueSum;
     }
 
     /**

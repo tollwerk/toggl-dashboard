@@ -14,9 +14,29 @@ common:
 system:
   token: system
   name: Allgemein
+  working_days: 62
   costs:
-    rent: 1000
-    telecom: 100
+    monthly:
+      rent: 1523
+      telecom: 70
+      kindergarden: 125
+      wages: 120
+      cleaning: 102
+      energy: 146
+      coffee: 78
+    quarterly:
+      xing: 20
+      igeko: 100
+    yearly:
+      radio: 140
+      companyinsurance: 1000
+      carinsurance1: 623
+      yellowpages: 77
+      ihk: 150
+      t3n: 35
+      accountingsoftware: 200
+      bundesanzeiger: 30
+      cartax: 264
 general:
   locale: de_DE
 toggl:

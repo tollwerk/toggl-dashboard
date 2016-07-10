@@ -126,6 +126,12 @@ class UserReport
      */
     protected $workingDaysPerMonthAndContract;
     /**
+     * Costs per month
+     *
+     * @var array
+     */
+    protected $costsPerMonth;
+    /**
      * Personal holidays
      *
      * @var int
@@ -229,6 +235,13 @@ class UserReport
                     );
                 }
             }
+
+            // Calculate the total costs per month
+            foreach ($this->workingDaysPerMonthAndContract[$month] as $contractId => $contractWorkingDays) {
+                $this->costsPerMonth[$month] +=
+                    ($contractWorkingDays / array_sum($this->workingDaysPerMonthAndContract[$month])) *
+                    $this->contracts[$contractId]->getCostsPerMonth();
+            }
         }
     }
 
@@ -239,6 +252,7 @@ class UserReport
     {
         $this->workingDaysPerWeekAndContract = array_fill_keys(array_keys($this->weeks), []);
         $this->workingDaysPerMonthAndContract = array_fill_keys(array_keys($this->months), []);
+        $this->costsPerMonth = array_fill_keys(array_keys($this->months), 0);
 
         // Run through all working days and collect the working day states
         foreach ($this->days as $reportDay) {
@@ -470,5 +484,19 @@ class UserReport
     public function getPersonalHolidaysPast()
     {
         return $this->personalHolidaysPast;
+    }
+
+    /**
+     * Return the contract based costs for a particular month
+     *
+     * @param int $month Month
+     * @return float Monthly costs
+     * @throws \InvalidArgumentException If the month doesn't exist
+     */
+    public function getMonthlyCosts($month) {
+        if (!array_key_exists($month, $this->costsPerMonth)) {
+            throw new \InvalidArgumentException(sprintf('Invalid month index "%s"', $month));
+        }
+        return $this->costsPerMonth[$month];
     }
 }

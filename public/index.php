@@ -111,6 +111,8 @@ $dateStr = $currentCalendarWeekStart->format($calendarWeekStartFormat).'-'.$curr
     endfor;
     ?></nav>
 <div class="time-charts"><?php
+    $monthlyUserCosts = 0;
+    $dailyUserBillableSums = [];
 
     // Run through all user statistics
     /**
@@ -118,7 +120,9 @@ $dateStr = $currentCalendarWeekStart->format($calendarWeekStartFormat).'-'.$curr
      * @var UserReport $userReport
      */
     foreach ($userReports as $userId => $userReport):
-        $userChart = Html::json(Chart::weekly($userReport, $currentCalendarWeekStart));
+        $monthlyUserCosts += $userReport->getMonthlyCosts($currentCalendarWeekStart->format('n'));
+
+        $userChart = Html::json(Chart::weekly($userReport, $currentCalendarWeekStart, $dailyUserBillableSums));
         $userChart = preg_replace('/"%([^%]+)%"/', 'Tollwerk.Dashboard.$1', $userChart);
         $userOvertime = number_format($userReport->getUser()->getOvertime(), 2);
         $userOvertimeClass = ($userReport->getUser()->getOvertime() >= 0) ? 'positive' : 'negative';
@@ -128,7 +132,7 @@ $dateStr = $currentCalendarWeekStart->format($calendarWeekStartFormat).'-'.$curr
         ?>
         <figure class="time-chart">
         <figcaption><?= Html::h($userReport->getUser()->getName()); ?></figcaption>
-        <div id="time-chart-<?= $userReport->getUser()->getToken(); ?>" style="width:300px;height:260px">
+        <div id="time-chart-<?= $userReport->getUser()->getToken(); ?>" style="width:320px;height:260px">
             <script>Tollwerk.Dashboard.initUserTimeChart('time-chart-<?= $userReport->getUser()->getToken(); ?>', <?= $userChart; ?>);</script>
         </div>
         <dl>
@@ -144,6 +148,16 @@ $dateStr = $currentCalendarWeekStart->format($calendarWeekStartFormat).'-'.$curr
         </figure><?php
 
     endforeach;
+
+    $teamChart = Html::json(Chart::team($currentCalendarWeekStart, $monthlyUserCosts, $dailyUserBillableSums));
+
+    ?>
+    <figure class="time-chart">
+        <figcaption><?= Html::h(sprintf(_('header.team'), strftime('%B', $currentCalendarWeekStart->format('U')))); ?></figcaption>
+        <div id="time-chart-team" style="width:320px;height:260px">
+            <script>Tollwerk.Dashboard.initUserTimeChart('time-chart-team', <?= $teamChart; ?>);</script>
+        </div>
+    </figure><?php
 
     ?></div>
 </body>

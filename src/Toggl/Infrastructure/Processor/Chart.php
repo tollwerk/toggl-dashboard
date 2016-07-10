@@ -58,6 +58,12 @@ class Chart
      */
     const COLOR_BORDER = '#ffffff';
     /**
+     * Weekend color
+     *
+     * @var string
+     */
+    const COLOR_WEEKEND = '#eeeeee';
+    /**
      * Business holiday color (text)
      *
      * @var string
@@ -111,12 +117,13 @@ class Chart
      * Create the user time chart data
      *
      * @param UserReport $userReport User statistics data
-     * @param \DateTimeInterface $datetime Timestamp
+     * @param \DateTime|\DateTimeInterface $datetime Timestamp
+     * @param array $dailyUserBillableSums Daily user billable sums
      * @return array User time chart data
      * @see http://api.highcharts.com/highcharts
      * @see http://www.highcharts.com/demo/column-placement
      */
-    public static function weekly(UserReport $userReport, \DateTime $datetime = null)
+    public static function weekly(UserReport $userReport, \DateTime $datetime = null, array &$dailyUserBillableSums)
     {
         if ($datetime == null) {
             $datetime = new \DateTime('now');
@@ -126,7 +133,7 @@ class Chart
         $today = new \DateTime('now');
         $weekDay = ($datetime->format('N') + 7 - intval(App::getConfig('common.start_weekday'))) % 7;
         $currentDay = clone $datetime;
-        $currentDay = $currentDay->setTime(0, 0, 0)->modify('-'.$weekDay.' days');
+        $currentDay = $currentDay->setTime(0, 0, 0)->modify('-' . $weekDay . ' days');
         $currentYearDay = $currentDay->format('z');
 
         /** @var DayReport[] $dayReports */
@@ -151,15 +158,12 @@ class Chart
         }
         $minYAxisRange = $userWorkingHoursPerDay;
 
-        // Colors
-        $weekendBackgroundColor = '#eeeeee';
-
         // Calculate day data
         $series = ['total' => [], 'billable' => []];
         $weekAverage = ['total' => [], 'billable' => [], 'billable_status' => []];
         $plotBands = [
-            self::plotBand(4.5, 5.5, $weekendBackgroundColor),
-            self::plotBand(5.5, 6.5, $weekendBackgroundColor),
+            self::plotBand(4.5, 5.5, self::COLOR_WEEKEND),
+            self::plotBand(5.5, 6.5, self::COLOR_WEEKEND),
         ];
 
         // Run through all week reports
@@ -179,7 +183,7 @@ class Chart
                     $businessHoliday
                 );
 
-            // If this is a personal holiday
+                // If this is a personal holiday
             } elseif ($dayReport->getPersonalHoliday()) {
                 $plotBands[] = self::plotBand(
                     $index - .5, $index + .5, self::COLOR_HOLIDAY_PERSONAL_BG, self::COLOR_HOLIDAY,
@@ -245,6 +249,14 @@ class Chart
                 $monthAverage['total'][] = $dayTotal;
                 $monthAverage['billable'][] = $dayBillable;
                 $monthAverage['billable_status'][] = $dayReport->getBillableStatus();
+            }
+
+            // Add to the daily billable sum
+            $monthDay = $dayReport->getDay();
+            if (!array_key_exists($monthDay, $dailyUserBillableSums)) {
+                $dailyUserBillableSums[$monthDay] = $dayReport->getRevenueSum();
+            } else {
+                $dailyUserBillableSums[$monthDay] += $dayReport->getRevenueSum();
             }
         }
         // Add the month averages
@@ -344,6 +356,124 @@ class Chart
                     'tooltip' => [
                         'pointFormat' => '<span style="color:{point.color}">●</span> {series.name}: <b>{point.y}h</b><br/>'
                     ]
+                ],
+            ],
+            'credits' => [
+                'enabled' => false
+            ],
+            'legend' => [
+                'enabled' => false
+            ]
+        ];
+        return $chart;
+    }
+
+    /**
+     * Create the team chart
+     *
+     * @param \DateTimeInterface $datetime Current date
+     * @param float $userCosts User costs
+     * @param array $dailyUserBillableSums User daily billable sums
+     * @return array
+     */
+    public static function team(\DateTimeInterface $datetime, $userCosts, array $dailyUserBillableSums)
+    {
+        $datetime = $datetime->setDate($datetime->format('Y'), $datetime->format('n'), 1);
+
+        // Calculate the monthly system costs
+        $monthlySystemCosts = $userCosts;
+        $systemCosts = App::getConfig('system.costs');
+
+        if (array_key_exists('yearly', $systemCosts)) {
+            $monthlySystemCosts += array_sum(array_map('floatval', (array)$systemCosts['yearly'])) / 12;
+        }
+        if (array_key_exists('quarterly', $systemCosts)) {
+            $monthlySystemCosts += array_sum(array_map('floatval', (array)$systemCosts['quarterly'])) / 4;
+        }
+        if (array_key_exists('monthly', $systemCosts)) {
+            $monthlySystemCosts += array_sum(array_map('floatval', (array)$systemCosts['monthly']));
+        }
+        $monthlySystemCosts = round($monthlySystemCosts);
+
+        // Initialize variables
+        $pointStart = $datetime->format('U') * 1000 - 86400000;
+        $currentMonth = $datetime->format('n');
+        $currentYear = $datetime->format('Y');
+        $workingDays = intval(App::getConfig('system.working_days'));
+
+        // Collect all working days
+        $workingDayCosts = [['y' => 0]];
+        $cumulatedBillableSums = [['y' => null]];
+        while ($datetime->format('n') == $currentMonth) {
+            $weekDay = intval($datetime->format('w'));
+            $weekDayBit = pow(2, $weekDay);
+            $workingDayCosts[] = ($weekDayBit & $workingDays) ? 1 : null;
+            $datetime = $datetime->modify('+1 day');
+        }
+        $monthWorkingDays = array_sum($workingDayCosts);
+        $cumulatedCosts = 0;
+        $cumulatedBillableSum = 0;
+        $plotBands = [];
+
+        // Run through all days of the month
+        foreach ($workingDayCosts as $workingDay => $costs) {
+
+            // Add a plot line if this is not a working day
+            if ($costs === null) {
+                $from = gmmktime(0, 0, 0, $currentMonth, $workingDay + 1, $currentYear) * 1000 - 43200000;
+                $plotBands[] = self::plotBand($from, $from + 86400000, self::COLOR_WEEKEND);
+
+                // Else: Add the costs data
+            } else {
+                $workingDayCosts[$workingDay] = [
+                    'y' => round($cumulatedCosts),
+                    'marker' => [
+                        'enabled' => false
+                    ],
+                    'color' => self::rgbToHex(self::COLOR_DATA_MAX),
+                ];
+                $cumulatedCosts += $monthlySystemCosts / $monthWorkingDays;
+            }
+
+            // Cumulate and register the billable sum
+            $dailyUserBillableSum = $dailyUserBillableSums[$workingDay + 1];
+            $cumulatedBillableSum += $dailyUserBillableSum;
+            $cumulatedBillableSums[] = [
+                'y' => $dailyUserBillableSum ? round($cumulatedBillableSum) : null,
+                'color' => self::rgbToHex(self::lighten(($cumulatedBillableSum >= $workingDayCosts[$workingDay]['y']) ?
+                    self::COLOR_DATA_MAX : self::COLOR_DATA_MIN, .3))
+            ];
+        }
+
+        $chart = [
+            'chart' => [
+                'zoomType' => 'x',
+            ],
+            'title' => ['text' => null],
+            'xAxis' => [
+                'type' => 'datetime',
+                'maxZoom' => 48 * 3600 * 1000,
+                'plotBands' => $plotBands
+            ],
+            'yAxis' => [
+                'title' => [
+                    'text' => '',
+                ]
+            ],
+            'series' => [
+                [
+                    'type' => 'column',
+                    'data' => $cumulatedBillableSums,
+                    'pointStart' => $pointStart,
+                    'pointInterval' => 24 * 3600 * 1000,
+                    'groupPadding' => 0,
+                ],
+                [
+                    'type' => 'line',
+                    'data' => $workingDayCosts,
+                    'pointStart' => $pointStart,
+                    'pointInterval' => 24 * 3600 * 1000, // one day
+                    'lineWidth' => 1,
                 ],
             ],
             'credits' => [
@@ -468,7 +598,8 @@ class Chart
      * @param DayReport $dayReport Day report
      * @return string Personal holiday label
      */
-    protected static function personalHolidayLabel(DayReport $dayReport) {
+    protected static function personalHolidayLabel(DayReport $dayReport)
+    {
         $personalHoliday = $dayReport->getPersonalHoliday();
         if ($personalHoliday === DayReport::DEFAULT_HOLIDAY) {
             return _('holiday.personal');
