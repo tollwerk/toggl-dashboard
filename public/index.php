@@ -49,7 +49,7 @@ $userRepository = $entityManager->getRepository('Tollwerk\Toggl\Domain\Model\Use
 /** @var User[] $users */
 $users = [];
 /** @var User $user */
-foreach ($userRepository->findBy(['active' => true/*, 'id' => 7*/]) as $user) {
+foreach ($userRepository->findBy(['active' => true/*, 'id' => 2*/]) as $user) {
     $users[$user->getId()] = $user;
 }
 $userReports = [];

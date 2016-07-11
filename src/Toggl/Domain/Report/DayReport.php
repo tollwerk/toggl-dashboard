@@ -363,7 +363,7 @@ class DayReport
         $this->timeActual = $stats->getTotal();
         $this->timeStatus = $this->timeTarget ? ($this->timeActual / $this->timeTarget) : null;
         $this->billableActual = $stats->getBillable();
-        $this->billableStatus = $this->billableTarget ? ($this->billableActual / $this->billableTarget) : null;
+        $this->billableStatus = $this->billableTarget ? ($this->billableActual / (3600 * $this->billableTarget)) : null;
         $this->revenueSum = $stats->getBillableSum();
         $this->revenueStatus = $this->revenueTarget ? ($this->revenueSum / $this->revenueTarget) : null;
     }

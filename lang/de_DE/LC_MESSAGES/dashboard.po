@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Toggl dashboard\n"
 "POT-Creation-Date: 2016-07-11 22:57+0200\n"
-"PO-Revision-Date: 2016-07-11 22:57+0200\n"
+"PO-Revision-Date: 2016-07-11 23:10+0200\n"
 "Last-Translator: Joschi Kuphal <joschi@tollwerk.de>\n"
 "Language-Team: tollwerk GmbH <info@tollwerk.de>\n"
 "Language: de_DE\n"
@@ -58,7 +58,7 @@ msgid "info.holiday.remaining"
 msgstr "Unverplante Urlaubstage %s"
 
 #: public/index.php:166
-#, fuzzy, php-format
+#, php-format
 msgid "header.team"
 msgstr "Team (%s)"
 

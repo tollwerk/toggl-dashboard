@@ -169,12 +169,9 @@ class Chart
         // Run through all week reports
         foreach ($dayReports as $index => $dayReport) {
             $dayTotal = $dayReport->getTimeActual() ? self::round($dayReport->getTimeActual() / 3600) : null;
-            $dayBillable = $dayReport->getBillableActual() ? self::round($dayReport->getBillableActual() / 3600) : null;
-
-//            $dayBillableTarget = $dayReport->getBillableTarget() ?: null;
-//            $dayBillableStatus = $dayBillableTarget * $dayReport->getRevenueStatus();
-//            echo $dayBillable.'/'.$dayBillableStatus.'<br/>';
-            // TODO: Set $dayBillableStatus as width and $dayBillable as label, also for the average calculations
+            $dayBillableTime = $dayReport->getBillableActual() ? self::round($dayReport->getBillableActual() / 3600) : null;
+            $dayRevenueStatus = $dayReport->getRevenueStatus() ?: null;
+            $dayRevenueTime = $dayRevenueStatus ? self::round($dayReport->getBillableTarget() * $dayRevenueStatus) : null;
 
             // If this is a business holiday
             if ($businessHoliday = $dayReport->getBusinessHoliday()) {
@@ -193,8 +190,8 @@ class Chart
                 // Else if the day should be used for the week average
             } elseif (($dayReport->getYearDay() <= $today->format('z')) && $dayReport->isWorkingDay()) {
                 $weekAverage['total'][] = $dayTotal;
-                $weekAverage['billable'][] = $dayBillable;
-                $weekAverage['billable_status'][] = $dayReport->getBillableStatus();
+                $weekAverage['billable'][] = $dayRevenueTime;
+                $weekAverage['billable_status'][] = $dayRevenueStatus;
             }
 
             $series['total'][] = [
@@ -206,7 +203,12 @@ class Chart
                 ) : self::rgbToHex(self::lighten(self::hexToRgb(self::COLOR_HOLIDAY), .5)),
             ];
             $series['billable'][] = [
-                'y' => $dayBillable,
+                'y' => $dayRevenueTime,
+                'billable' => [
+                    'time' => $dayBillableTime,
+                    'sum' => $dayReport->getRevenueSum(),
+                    'status' => self::round($dayRevenueStatus * 100)
+                ],
                 'total' => $dayTotal,
                 'color' => $dayReport->isWorkingDay() ? self::interpolateHex(
                     self::COLOR_DATA_MIN,
@@ -227,6 +229,11 @@ class Chart
             $billableAverage = self::round(array_sum($weekAverage['billable']) / count($weekAverage['billable']));
             $series['billable'][] = [
                 'y' => $billableAverage,
+                'billable' => [ // TODO
+                    'time' => 0,
+                    'sum' => 0,
+                    'status' => 0
+                ],
                 'total' => $totalAverage,
                 'color' => self::rgbToHex(self::COLOR_AVERAGE),
             ];
@@ -270,6 +277,11 @@ class Chart
             $billableAverage = self::round(array_sum($monthAverage['billable']) / count($monthAverage['billable']));
             $series['billable'][] = [
                 'y' => $billableAverage,
+                'billable' => [ // TODO
+                    'time' => 0,
+                    'sum' => 0,
+                    'status' => 0
+                ],
                 'total' => $totalAverage,
                 'color' => self::rgbToHex(self::COLOR_AVERAGE),
             ];
@@ -354,7 +366,8 @@ class Chart
                         ]
                     ],
                     'tooltip' => [
-                        'pointFormat' => '<span style="color:{point.color}">●</span> {series.name}: <b>{point.y}h</b><br/>'
+//                        'pointFormat' => '<span style="color:{point.color}">●</span> {series.name}: <b>{point.y}h</b><br/>',
+                        'pointFormatter' => '%billables%'
                     ]
                 ],
             ],

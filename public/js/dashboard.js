@@ -18,5 +18,17 @@ Tollwerk.Dashboard.initUserTimeChart = function (id, data) {
  * @returns {string} Performance
  */
 Tollwerk.Dashboard.performance = function() {
-    return Math.round(100 * this.point.y / this.total) + '%';
+    return Math.round(100 * this.point.billable.time / this.total) + '%';
+}
+
+/**
+ * Return billable stats
+ *
+ * @returns {string} Billable stats
+ */
+Tollwerk.Dashboard.billables = function() {
+    var tooltip = '<span style="color:' + this.color + '">●</span> ' + this.series.name + ': ';
+    tooltip += this.billable.time + 'h / €' + this.billable.sum + ' (' + this.billable.status + '%)';
+    tooltip += '<br/>';
+    return tooltip;
 }
