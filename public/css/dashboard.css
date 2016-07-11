@@ -1,15 +1,49 @@
 body {
     font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
     background-color: #eee;
+    margin: 0;
 }
 
-.weeks .current {
-    font-weight: bold;
+.weeks {
+    text-align: center;
+    background-color: #ccc;
+    padding: 1em;
+}
+
+.weeks select {
+    vertical-align: middle;
+    font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
+    padding: .3em .5em;
+    margin: 0 1em;
+}
+
+.weeks a {
+    font-size: xx-large;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.time-charts {
+    text-align: center;
 }
 
 .time-chart {
     display: inline-block;
     vertical-align: top;
+    margin: .5em auto;
+    width: 320px;
+}
+
+
+@media all and (min-width: 500px){
+    .time-chart {
+        margin: 2em;
+    }
+}
+
+
+.time-chart div {
+    height: 260px;
 }
 
 figcaption {
@@ -35,4 +69,10 @@ dd {
 .negative {
     color: #f00;
     font-weight: bold;
+}
+
+.cw {
+    color: #000;
+    font-weight: bold;
+    text-decoration: none;
 }

@@ -86,6 +86,10 @@ if ($currentCalendarWeekStart->format('n') != $currentCalendarWeekEnd->format('n
     }
 }
 $dateStr = $currentCalendarWeekStart->format($calendarWeekStartFormat).'-'.$currentCalendarWeekEnd->format('j.n.Y');
+$previousCalendarWeek = clone $currentCalendarWeekStart;
+$previousCalendarWeek = $previousCalendarWeek->modify('-1 week');
+$nextCalendarWeek = clone $currentCalendarWeekStart;
+$nextCalendarWeek = $nextCalendarWeek->modify('+1 week');
 
 ?><!DOCTYPE html>
 <html lang="de">
@@ -101,15 +105,20 @@ $dateStr = $currentCalendarWeekStart->format($calendarWeekStartFormat).'-'.$curr
     <link href="/css/dashboard.css" type="text/css" rel="stylesheet"/>
 </head>
 <body>
-<h1><?= sprintf(_('header.calendarweek'), $dateStr, $currentCalendarWeek); ?></h1>
-<nav class="weeks"><?php
-    for ($monday = clone $firstMondayOfYear; $monday->format('Y') == date('Y'); $monday = $monday->modify('+1 week')):
-        $week = ltrim($monday->format('W'), '0');
-        ?><a href="index.php?cw=<?= $week; ?>"<?php if ($week == $currentCalendarWeek) {
-        echo ' class="current"';
-    } ?>><?= $week; ?></a> <?php
-    endfor;
-    ?></nav>
+<form class="weeks" action="index.php" method="get">
+    <a href="index.php?cw=<?= $previousCalendarWeek->format('W'); ?>" class="cw" title="<?= Html::h(_('nav.calendarweek.previous')); ?>">〈</a>
+    <select name="cw" onchange="this.form.submit()"><?php
+        for ($monday = clone $firstMondayOfYear; $monday->format('Y') == date('Y'); $monday = $monday->modify('+1 week')):
+            $week = ltrim($monday->format('W'), '0');
+            $weekEnd = clone $monday;
+            $dateStr = $monday->format(_('nav.calendarweek.option.dateformat')).' - '.$weekEnd->modify('+6 days')->format(_('nav.calendarweek.option.dateformat'));
+            ?><option value="<?= $week; ?>"<?php if ($week == $currentCalendarWeek) {
+            echo ' selected="selected"';
+        } ?>><?= Html::h(sprintf(_('nav.calendarweek.option'), $dateStr, $week)); ?></option><?php
+        endfor;
+    ?></select>
+    <a href="index.php?cw=<?= $nextCalendarWeek->format('W'); ?>" class="cw" title="<?= Html::h(_('nav.calendarweek.next')); ?>">〉</a>
+</form>
 <div class="time-charts"><?php
     $monthlyUserCosts = 0;
     $dailyUserBillableSums = [];
@@ -132,7 +141,7 @@ $dateStr = $currentCalendarWeekStart->format($calendarWeekStartFormat).'-'.$curr
         ?>
         <figure class="time-chart">
         <figcaption><?= Html::h($userReport->getUser()->getName()); ?></figcaption>
-        <div id="time-chart-<?= $userReport->getUser()->getToken(); ?>" style="width:320px;height:260px">
+        <div id="time-chart-<?= $userReport->getUser()->getToken(); ?>">
             <script>Tollwerk.Dashboard.initUserTimeChart('time-chart-<?= $userReport->getUser()->getToken(); ?>', <?= $userChart; ?>);</script>
         </div>
         <dl>
@@ -154,7 +163,7 @@ $dateStr = $currentCalendarWeekStart->format($calendarWeekStartFormat).'-'.$curr
     ?>
     <figure class="time-chart">
         <figcaption><?= Html::h(sprintf(_('header.team'), strftime('%B', $currentCalendarWeekStart->format('U')))); ?></figcaption>
-        <div id="time-chart-team" style="width:320px;height:260px">
+        <div id="time-chart-team">
             <script>Tollwerk.Dashboard.initUserTimeChart('time-chart-team', <?= $teamChart; ?>);</script>
         </div>
     </figure><?php

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Toggl dashboard\n"
-"POT-Creation-Date: 2016-07-10 16:02+0200\n"
-"PO-Revision-Date: 2016-07-10 17:48+0200\n"
+"POT-Creation-Date: 2016-07-11 22:57+0200\n"
+"PO-Revision-Date: 2016-07-11 22:57+0200\n"
 "Last-Translator: Joschi Kuphal <joschi@tollwerk.de>\n"
 "Language-Team: tollwerk GmbH <info@tollwerk.de>\n"
 "Language: de_DE\n"
@@ -16,92 +16,110 @@ msgstr ""
 "X-Poedit-SearchPath-0: src/Toggl\n"
 "X-Poedit-SearchPath-1: public\n"
 
-#: public/index.php:96 public/index.php:104
+#: public/index.php:100 public/index.php:108
 #, php-format
 msgid "header.calendarweek"
 msgstr "%s (KW %s)"
 
-#: public/index.php:138
+#: public/index.php:110
+msgid "nav.calendarweek.previous"
+msgstr "Vorherige Kalenderwoche"
+
+#: public/index.php:115
+msgid "nav.calendarweek.option.dateformat"
+msgstr "d.m.Y"
+
+#: public/index.php:118
+#, php-format
+msgid "nav.calendarweek.option"
+msgstr "%s (KW %s)"
+
+#: public/index.php:121
+msgid "nav.calendarweek.next"
+msgstr "Nächste Kalenderwoche"
+
+#: public/index.php:149
 msgid "info.overtime"
 msgstr "Überstunden-Saldo"
 
-#: public/index.php:140
+#: public/index.php:151
 #, php-format
 msgid "info.holiday"
 msgstr "Urlaubstage %s"
 
-#: public/index.php:142
+#: public/index.php:153
 #, php-format
 msgid "info.holiday.taken"
 msgstr "Bisherige Urlaubstage %s"
 
-#: public/index.php:144
+#: public/index.php:155
 #, php-format
 msgid "info.holiday.remaining"
 msgstr "Unverplante Urlaubstage %s"
 
-#: public/index.php:155
+#: public/index.php:166
+#, fuzzy, php-format
 msgid "header.team"
 msgstr "Team (%s)"
 
-#: src/Toggl/Infrastructure/Processor/Chart.php:272
+#: src/Toggl/Infrastructure/Processor/Chart.php:284
 msgid "weekday.1.abbr"
 msgstr "MO"
 
-#: src/Toggl/Infrastructure/Processor/Chart.php:273
+#: src/Toggl/Infrastructure/Processor/Chart.php:285
 msgid "weekday.2.abbr"
 msgstr "DI"
 
-#: src/Toggl/Infrastructure/Processor/Chart.php:274
+#: src/Toggl/Infrastructure/Processor/Chart.php:286
 msgid "weekday.3.abbr"
 msgstr "MI"
 
-#: src/Toggl/Infrastructure/Processor/Chart.php:275
+#: src/Toggl/Infrastructure/Processor/Chart.php:287
 msgid "weekday.4.abbr"
 msgstr "DO"
 
-#: src/Toggl/Infrastructure/Processor/Chart.php:276
+#: src/Toggl/Infrastructure/Processor/Chart.php:288
 msgid "weekday.5.abbr"
 msgstr "FR"
 
-#: src/Toggl/Infrastructure/Processor/Chart.php:277
+#: src/Toggl/Infrastructure/Processor/Chart.php:289
 msgid "weekday.6.abbr"
 msgstr "SA"
 
-#: src/Toggl/Infrastructure/Processor/Chart.php:278
+#: src/Toggl/Infrastructure/Processor/Chart.php:290
 msgid "weekday.0.abbr"
 msgstr "SO"
 
-#: src/Toggl/Infrastructure/Processor/Chart.php:279
+#: src/Toggl/Infrastructure/Processor/Chart.php:291
 msgid "week.abbr"
 msgstr "W"
 
-#: src/Toggl/Infrastructure/Processor/Chart.php:280
+#: src/Toggl/Infrastructure/Processor/Chart.php:292
 msgid "month.abbr"
 msgstr "M"
 
-#: src/Toggl/Infrastructure/Processor/Chart.php:315
+#: src/Toggl/Infrastructure/Processor/Chart.php:327
 msgid "chart.total"
 msgstr "Gesamt"
 
-#: src/Toggl/Infrastructure/Processor/Chart.php:319
+#: src/Toggl/Infrastructure/Processor/Chart.php:331
 #, php-format
 msgid "unit.hours"
 msgstr "%sh"
 
-#: src/Toggl/Infrastructure/Processor/Chart.php:331
+#: src/Toggl/Infrastructure/Processor/Chart.php:343
 msgid "chart.billable"
 msgstr "Verrechenbar"
 
-#: src/Toggl/Infrastructure/Processor/Chart.php:486
+#: src/Toggl/Infrastructure/Processor/Chart.php:605
 msgid "holiday.personal"
 msgstr "Urlaub"
 
-#: src/Toggl/Infrastructure/Processor/Chart.php:489
+#: src/Toggl/Infrastructure/Processor/Chart.php:608
 msgid "holiday.personal.excused"
 msgstr "Entschuldigt"
 
-#: src/Toggl/Infrastructure/Processor/Chart.php:492
+#: src/Toggl/Infrastructure/Processor/Chart.php:611
 msgid "holiday.personal.overtime"
 msgstr "Überstunden"
 
