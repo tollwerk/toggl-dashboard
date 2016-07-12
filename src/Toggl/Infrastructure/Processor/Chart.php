@@ -459,9 +459,6 @@ class Chart
         }
 
         $chart = [
-            'chart' => [
-                'zoomType' => 'x',
-            ],
             'title' => ['text' => null],
             'xAxis' => [
                 'type' => 'datetime',

@@ -3,3 +3,6 @@
 /composer.lock
 .env
 /config/config.yml
+/dist/
+/node_modules/
+/.htpasswd

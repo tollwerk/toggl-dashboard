@@ -1,0 +1,35 @@
+{
+  "name": "toggl-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tollwerk Toggl Team Dashboard",
+  "main": "public/index.php",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "favicon": {
+    "type": "git",
+    "url": "git@github.com:tollwerk/toggl-dashboard.git"
+  },
+  "author": "Joschi Kuphal <joschi@tollwerk.de>",
+  "license": "ISC",
+  "engines": {
+    "node": ">= 5.0.0"
+  },
+  "devDependencies": {
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-contrib-cssmin": "^1.0.1",
+    "grunt-contrib-uglify": "^1.0.1",
+    "grunt-contrib-clean": "^1.0.0",
+    "grunt-concat-sourcemap": "^0.4.3",
+    "grunt-autoprefixer": "^3.0.4",
+    "grunt-sass": "^1.2.0",
+    "grunt-favicons": "^0.8.0",
+    "grunt-text-replace": "^0.4.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "matchdep": "~1.0.1"
+  },
+  "peerDependencies": {
+    "grunt": ">=1.0.1"
+  }
+}

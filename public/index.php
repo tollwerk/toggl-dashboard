@@ -97,12 +97,13 @@ $nextCalendarWeek = $nextCalendarWeek->modify('+1 week');
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="refresh" content="900; URL=index.php">
+    <?php readfile(dirname(__DIR__).DIRECTORY_SEPARATOR.'dist'.DIRECTORY_SEPARATOR.'favicons.html'); ?>
     <title><?= sprintf(_('header.calendarweek'), $dateStr, $currentCalendarWeek); ?> — Toggl Dashboard</title>
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/no-data-to-display.js"></script>
-    <script src="/js/dashboard.js"></script>
-    <link href="/css/dashboard.css" type="text/css" rel="stylesheet"/>
+    <script src="/js/dashboard.min.js"></script>
+    <link href="/css/dashboard.min.css" type="text/css" rel="stylesheet"/>
 </head>
 <body>
 <form class="weeks" action="index.php" method="get">
