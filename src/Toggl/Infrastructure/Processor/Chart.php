@@ -160,7 +160,7 @@ class Chart
 
         // Calculate day data
         $series = ['total' => [], 'billable' => []];
-        $weekAverage = ['total' => [], 'billable' => [], 'billable_status' => []];
+        $weekAverage = ['total' => [], 'billable' => [], 'time' => [], 'sum' => [], 'status' => []];
         $plotBands = [
             self::plotBand(4.5, 5.5, self::COLOR_WEEKEND),
             self::plotBand(5.5, 6.5, self::COLOR_WEEKEND),
@@ -186,12 +186,15 @@ class Chart
                     $index - .5, $index + .5, self::COLOR_HOLIDAY_PERSONAL_BG, self::COLOR_HOLIDAY,
                     self::personalHolidayLabel($dayReport)
                 );
+            }
 
-                // Else if the day should be used for the week average
-            } elseif (($dayReport->getYearDay() <= $today->format('z')) && $dayReport->isWorkingDay()) {
+            // Else if the day should be used for the week average
+            if (($dayReport->getYearDay() <= $today->format('z')) && $dayReport->isWorkingDay()) {
                 $weekAverage['total'][] = $dayTotal;
                 $weekAverage['billable'][] = $dayRevenueTime;
-                $weekAverage['billable_status'][] = $dayRevenueStatus;
+                $weekAverage['time'][] = $dayBillableTime;
+                $weekAverage['sum'][] = $dayReport->getRevenueSum();
+                $weekAverage['status'][] = self::round($dayRevenueStatus * 100);
             }
 
             $series['total'][] = [
@@ -219,20 +222,19 @@ class Chart
         }
 
         // Add the week averages
-        if (count($weekAverage['total'])) {
-            $totalAverage = self::round(array_sum($weekAverage['total']) / count($weekAverage['total']));
+        if ($averageDays = count($weekAverage['total'])) {
+            $totalAverage = self::round(array_sum($weekAverage['total']) / $averageDays);
             $series['total'][] = [
                 'y' => $totalAverage,
                 'color' => self::rgbToHex(self::lighten(self::COLOR_AVERAGE, .3)),
             ];
 
-            $billableAverage = self::round(array_sum($weekAverage['billable']) / count($weekAverage['billable']));
             $series['billable'][] = [
-                'y' => $billableAverage,
-                'billable' => [ // TODO
-                    'time' => 0,
-                    'sum' => 0,
-                    'status' => 0
+                'y' => self::round(array_sum($weekAverage['billable']) / $averageDays) ?: null,
+                'billable' => [
+                    'time' => self::round(array_sum($weekAverage['time']) / $averageDays) ?: null,
+                    'sum' => self::round(array_sum($weekAverage['sum']) / $averageDays) ?: null,
+                    'status' => self::round(array_sum($weekAverage['status']) / $averageDays) ?: 0,
                 ],
                 'total' => $totalAverage,
                 'color' => self::rgbToHex(self::COLOR_AVERAGE),
@@ -240,7 +242,7 @@ class Chart
         }
 
         // Calculate the monthly average
-        $monthAverage = ['total' => [], 'billable' => [], 'billable_status' => []];
+        $monthAverage = ['total' => [], 'billable' => [], 'time' => [], 'sum' => [], 'status' => []];
         $monthStart = clone $datetime;
         $monthStart = $monthStart->setDate($datetime->format('Y'), $datetime->format('n'), 1)->setTime(0, 0, 0);
         /** @var DayReport[] $monthlyDayReports */
@@ -252,10 +254,15 @@ class Chart
             // If the day should be used for the month average
             if (($dayReport->getYearDay() <= $today->format('z')) && $dayReport->isWorkingDay() && !$dayReport->isHoliday()) {
                 $dayTotal = $dayReport->getTimeActual() ? self::round($dayReport->getTimeActual() / 3600) : null;
-                $dayBillable = $dayReport->getBillableActual() ? self::round($dayReport->getBillableActual() / 3600) : null;
+                $dayBillableTime = $dayReport->getBillableActual() ? self::round($dayReport->getBillableActual() / 3600) : null;
+                $dayRevenueStatus = $dayReport->getRevenueStatus() ?: null;
+                $dayRevenueTime = $dayRevenueStatus ? self::round($dayReport->getBillableTarget() * $dayRevenueStatus) : null;
+
                 $monthAverage['total'][] = $dayTotal;
-                $monthAverage['billable'][] = $dayBillable;
-                $monthAverage['billable_status'][] = $dayReport->getBillableStatus();
+                $monthAverage['billable'][] = $dayRevenueTime;
+                $monthAverage['time'][] = $dayBillableTime;
+                $monthAverage['sum'][] = $dayReport->getRevenueSum();
+                $monthAverage['status'][] = self::round($dayRevenueStatus * 100);
             }
 
             // Add to the daily billable sum
@@ -267,20 +274,19 @@ class Chart
             }
         }
         // Add the month averages
-        if (count($monthAverage['total'])) {
-            $totalAverage = self::round(array_sum($monthAverage['total']) / count($monthAverage['total']));
+        if ($averageDays = count($monthAverage['total'])) {
+            $totalAverage = self::round(array_sum($monthAverage['total']) / $averageDays);
             $series['total'][] = [
                 'y' => $totalAverage,
                 'color' => self::rgbToHex(self::lighten(self::COLOR_AVERAGE, .3)),
             ];
 
-            $billableAverage = self::round(array_sum($monthAverage['billable']) / count($monthAverage['billable']));
             $series['billable'][] = [
-                'y' => $billableAverage,
-                'billable' => [ // TODO
-                    'time' => 0,
-                    'sum' => 0,
-                    'status' => 0
+                'y' => self::round(array_sum($monthAverage['billable']) / $averageDays) ?: null,
+                'billable' => [
+                    'time' => self::round(array_sum($monthAverage['time']) / $averageDays) ?: null,
+                    'sum' => self::round(array_sum($monthAverage['sum']) / $averageDays) ?: null,
+                    'status' => self::round(array_sum($monthAverage['status']) / $averageDays) ?: 0,
                 ],
                 'total' => $totalAverage,
                 'color' => self::rgbToHex(self::COLOR_AVERAGE),
