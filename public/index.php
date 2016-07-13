@@ -132,7 +132,7 @@ $nextCalendarWeek = $nextCalendarWeek->modify('+1 week');
     foreach ($userReports as $userId => $userReport):
         $monthlyUserCosts += $userReport->getMonthlyCosts($currentCalendarWeekStart->format('n'));
 
-        $userChart = Html::json(Chart::weekly($userReport, $currentCalendarWeekStart, $dailyUserBillableSums));
+        $userChart = Html::json(Chart::weekly($userReport, clone $currentCalendarWeekStart, $dailyUserBillableSums));
         $userChart = preg_replace('/"%([^%]+)%"/', 'Tollwerk.Dashboard.$1', $userChart);
         $userOvertime = number_format($userReport->getUser()->getOvertime(), 2);
         $userOvertimeClass = ($userReport->getUser()->getOvertime() >= 0) ? 'positive' : 'negative';
@@ -159,7 +159,7 @@ $nextCalendarWeek = $nextCalendarWeek->modify('+1 week');
 
     endforeach;
 
-    $teamChart = Html::json(Chart::team($currentCalendarWeekStart, $monthlyUserCosts, $dailyUserBillableSums));
+    $teamChart = Html::json(Chart::team(clone $currentCalendarWeekStart, $monthlyUserCosts, $dailyUserBillableSums));
 
     ?>
     <figure class="time-chart">
