@@ -74,7 +74,7 @@ $firstMondayOfYear = $firstMondayOfYear->modify('+'.((8 - $firstMondayOfYear->fo
 
 // Determine the current calendar week
 if (empty($_GET['cw'])) {
-    $todayInCurrentYear = mktime(0, 0, 0, date('n'), data('j'), $currentYear);
+    $todayInCurrentYear = mktime(0, 0, 0, date('n'), date('j'), $currentYear);
     $currentCalendarWeek = intval(ltrim((new \DateTimeImmutable("@$todayInCurrentYear"))->format('W'), '0'));
 } else {
     $currentCalendarWeek = intval($_GET['cw']);
@@ -143,8 +143,12 @@ $nextCalendarWeek = $nextCalendarWeek->modify('+1 week');
     foreach ($userReports as $userId => $userReport):
         $monthlyUserCosts += $userReport->getMonthlyCosts($currentCalendarWeekStart->format('n'));
 
-        $userChart = Html::json(Chart::weekly($userReport, clone $currentCalendarWeekStart, $dailyUserBillableSums));
-        $userChart = preg_replace('/"%([^%]+)%"/', 'Tollwerk.Dashboard.$1', $userChart);
+        try {
+            $userChart = Chart::weekly($userReport, clone $currentCalendarWeekStart, $dailyUserBillableSums);
+        } catch (\Exception $e) {
+            continue;
+        }
+        $userChart = preg_replace('/"%([^%]+)%"/', 'Tollwerk.Dashboard.$1', Html::json($userChart));
         $userOvertime = number_format($userReport->getUser()->getOvertime(), 2);
         $userOvertimeClass = ($userReport->getUser()->getOvertime() >= 0) ? 'positive' : 'negative';
         $userRemainingHolidays = $userReport->getPersonalHolidays() - $userReport->getPersonalHolidaysPlanned();

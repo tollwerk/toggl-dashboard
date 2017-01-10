@@ -36,9 +36,7 @@
 
 namespace Tollwerk\Toggl\Infrastructure\Processor;
 
-use Guzzle\Common\Exception\RuntimeException;
 use Tollwerk\Toggl\Domain\Model\Contract;
-use Tollwerk\Toggl\Domain\Model\User;
 use Tollwerk\Toggl\Domain\Report\DayReport;
 use Tollwerk\Toggl\Domain\Report\UserReport;
 use Tollwerk\Toggl\Ports\App;
@@ -131,9 +129,9 @@ class Chart
 
         // Determine the week start
         $today = new \DateTime('now');
-        $weekDay = ($datetime->format('N') + 7 - intval(App::getConfig('common.start_weekday'))) % 7;
+        $weekDay = (intval($datetime->format('N')) + 7 - intval(App::getConfig('common.start_weekday'))) % 7;
         $currentDay = clone $datetime;
-        $currentDay = $currentDay->setTime(0, 0, 0)->modify('-' . $weekDay . ' days');
+        $currentDay = $currentDay->setTime(0, 0, 0)->modify('-'.$weekDay.' days');
         $currentYearDay = $currentDay->format('z');
 
         /** @var DayReport[] $dayReports */
@@ -246,7 +244,8 @@ class Chart
         $monthStart = clone $datetime;
         $monthStart = $monthStart->setDate($datetime->format('Y'), $datetime->format('n'), 1)->setTime(0, 0, 0);
         /** @var DayReport[] $monthlyDayReports */
-        $monthlyDayReports = $userReport->getRange($monthStart->format('z'), $monthStart->format('z') + $monthStart->format('t'));
+        $monthlyDayReports = $userReport->getRange($monthStart->format('z'),
+            $monthStart->format('z') + $monthStart->format('t'));
         if (!count($monthlyDayReports)) {
             throw new \RuntimeException('Invalid date range');
         }
@@ -455,7 +454,7 @@ class Chart
             }
 
             // Cumulate and register the billable sum
-            $dailyUserBillableSum = $dailyUserBillableSums[$workingDay + 1];
+            $dailyUserBillableSum = empty($dailyUserBillableSums[$workingDay + 1]) ? 0 : $dailyUserBillableSums[$workingDay + 1];
             $cumulatedBillableSum += $dailyUserBillableSum;
             $cumulatedBillableSums[] = [
                 'y' => $dailyUserBillableSum ? round($cumulatedBillableSum) : null,
