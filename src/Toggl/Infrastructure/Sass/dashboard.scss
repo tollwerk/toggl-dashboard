@@ -13,7 +13,18 @@ body {
     vertical-align: middle;
     font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
     padding: .3em .5em;
-    margin: 0 1em;
+    text-align: right;
+
+    &[name=cw] {
+      margin-left: 1em;
+    }
+    &[name=cy] {
+      margin-right: 1em;
+    }
+
+    option {
+      text-align: right;
+    }
   }
 
   a {

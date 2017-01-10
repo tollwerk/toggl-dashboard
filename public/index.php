@@ -54,27 +54,36 @@ foreach ($userRepository->findBy(['active' => true/*, 'id' => 2*/]) as $user) {
 }
 $userReports = [];
 
+// Get the current year
+$currentYear = empty($_GET['cy']) ? intval(date('Y')) : intval($_GET['cy']);
+
 // Run through all users
 /** @var User $user */
 foreach ($users as $user) {
     try {
 //        header('content-type: text/plain');
-        $userReports[$user->getId()] = UserReport::byYear($user);
+        $userReports[$user->getId()] = UserReport::byYear($user, $currentYear);
     } catch (\InvalidArgumentException $e) {
         continue;
     }
 }
 
 // Determine the first monday of the year
-$firstMondayOfYear = new \DateTime('@'.mktime(0, 0, 0, 1, 1));
+$firstMondayOfYear = new \DateTime('@'.mktime(0, 0, 0, 1, 1, $currentYear));
 $firstMondayOfYear = $firstMondayOfYear->modify('+'.((8 - $firstMondayOfYear->format('w')) % 7).' days');
 
 // Determine the current calendar week
-$currentCalendarWeek = empty($_GET['cw']) ? intval(ltrim((new \DateTimeImmutable('now'))->format('W'),
-    '0')) : intval($_GET['cw']);
+if (empty($_GET['cw'])) {
+    $todayInCurrentYear = mktime(0, 0, 0, date('n'), data('j'), $currentYear);
+    $currentCalendarWeek = intval(ltrim((new \DateTimeImmutable("@$todayInCurrentYear"))->format('W'), '0'));
+} else {
+    $currentCalendarWeek = intval($_GET['cw']);
+}
+
 $currentCalendarWeekStart = clone $firstMondayOfYear;
 $currentCalendarWeekStart = $currentCalendarWeekStart->modify('+'.($currentCalendarWeek - 1).' weeks');
 $currentCalendarWeekEnd = clone $currentCalendarWeekStart;
+$currentCalendarWeekEnd = $currentCalendarWeekEnd->modify('+6 days');
 $currentCalendarWeekEnd = $currentCalendarWeekEnd->modify('+6 days');
 
 $calendarWeekStartFormat = 'j.';
@@ -107,18 +116,20 @@ $nextCalendarWeek = $nextCalendarWeek->modify('+1 week');
 </head>
 <body>
 <form class="weeks" action="index.php" method="get">
-    <a href="index.php?cw=<?= $previousCalendarWeek->format('W'); ?>" class="cw" title="<?= Html::h(_('nav.calendarweek.previous')); ?>">〈</a>
+    <a href="index.php?cw=<?= $previousCalendarWeek->format('W'); ?>&cy=<?= $currentYear; ?>" class="cw" title="<?= Html::h(_('nav.calendarweek.previous')); ?>">〈</a>
     <select name="cw" onchange="this.form.submit()"><?php
-        for ($monday = clone $firstMondayOfYear; $monday->format('Y') == date('Y'); $monday = $monday->modify('+1 week')):
+        for ($monday = clone $firstMondayOfYear; $monday->format('Y') == $currentYear; $monday = $monday->modify('+1 week')):
             $week = ltrim($monday->format('W'), '0');
             $weekEnd = clone $monday;
             $dateStr = $monday->format(_('nav.calendarweek.option.dateformat')).' - '.$weekEnd->modify('+6 days')->format(_('nav.calendarweek.option.dateformat'));
-            ?><option value="<?= $week; ?>"<?php if ($week == $currentCalendarWeek) {
-            echo ' selected="selected"';
-        } ?>><?= Html::h(sprintf(_('nav.calendarweek.option'), $dateStr, $week)); ?></option><?php
+            ?><option value="<?= $week; ?>"<?= ($week == $currentCalendarWeek) ? ' selected="selected"' : ''; ?>><?= Html::h(sprintf(_('nav.calendarweek.option'), $dateStr, $week)); ?></option><?php
         endfor;
-    ?></select>
-    <a href="index.php?cw=<?= $nextCalendarWeek->format('W'); ?>" class="cw" title="<?= Html::h(_('nav.calendarweek.next')); ?>">〉</a>
+    ?></select><select name="cy" onchange="this.form.submit()"><?php
+        for ($year = 2016; $year <= date('Y'); ++$year):
+            ?><option value="<?= $year; ?>"<?= ($year == $currentYear) ? ' selected="selected"' : ''; ?>><?= $year; ?></option><?php
+        endfor;
+        ?></select>
+    <a href="index.php?cw=<?= $nextCalendarWeek->format('W'); ?>&cy=<?= $currentYear; ?>" class="cw" title="<?= Html::h(_('nav.calendarweek.next')); ?>">〉</a>
 </form>
 <div class="time-charts"><?php
     $monthlyUserCosts = 0;

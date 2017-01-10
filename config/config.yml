@@ -19,10 +19,10 @@ system:
     monthly:
       rent: 1523
       telecom: 70
-      kindergarden: 125
+      kindergarden: 25
       wages: 120
       cleaning: 102
-      energy: 146
+      energy: 198
       coffee: 78
     quarterly:
       xing: 20
