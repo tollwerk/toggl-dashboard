@@ -237,6 +237,7 @@ class UserReport
             }
 
             // Calculate the total costs per month
+            $this->workingDaysPerMonthAndContract[$month] = array_filter($this->workingDaysPerMonthAndContract[$month]);
             foreach ($this->workingDaysPerMonthAndContract[$month] as $contractId => $contractWorkingDays) {
                 $this->costsPerMonth[$month] +=
                     ($contractWorkingDays / array_sum($this->workingDaysPerMonthAndContract[$month])) *
@@ -250,8 +251,9 @@ class UserReport
      */
     protected function initWorkingDays()
     {
-        $this->workingDaysPerWeekAndContract = array_fill_keys(array_keys($this->weeks), []);
-        $this->workingDaysPerMonthAndContract = array_fill_keys(array_keys($this->months), []);
+        $contractTemplate = array_fill_keys(array_keys($this->contracts), 0);
+        $this->workingDaysPerWeekAndContract = array_fill_keys(array_keys($this->weeks), $contractTemplate);
+        $this->workingDaysPerMonthAndContract = array_fill_keys(array_keys($this->months), $contractTemplate);
         $this->costsPerMonth = array_fill_keys(array_keys($this->months), 0);
 
         // Run through all working days and collect the working day states
@@ -266,19 +268,11 @@ class UserReport
 
                     // Weekly working days
                     if ($reportDay->getYear() == $this->year) {
-                        $week = $reportDay->getWeek();
-                        if (!array_key_exists($contractId, $this->workingDaysPerWeekAndContract[$week])) {
-                            $this->workingDaysPerWeekAndContract[$week][$contractId] = 0;
-                        }
-                        ++$this->workingDaysPerWeekAndContract[$week][$contractId];
+                        ++$this->workingDaysPerWeekAndContract[$reportDay->getWeek()][$contractId];
                     }
 
                     // Monthly working days
-                    $month = $reportDay->getMonth();
-                    if (!array_key_exists($contractId, $this->workingDaysPerMonthAndContract[$month])) {
-                        $this->workingDaysPerMonthAndContract[$month][$contractId] = 0;
-                    }
-                    ++$this->workingDaysPerMonthAndContract[$month][$contractId];
+                    ++$this->workingDaysPerMonthAndContract[$reportDay->getMonth()][$contractId];
                 }
             }
         }
